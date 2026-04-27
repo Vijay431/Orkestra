@@ -1,5 +1,10 @@
 # Orkestra
 
+[![CI](https://github.com/Vijay431/Orkestra/actions/workflows/ci.yml/badge.svg)](https://github.com/Vijay431/Orkestra/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/vijay431/orkestra.svg)](https://pkg.go.dev/github.com/vijay431/orkestra)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8.svg)](https://go.dev)
+
 Self-hosted MCP ticket server for autonomous LLM agents. No cloud, no rate limits, no per-request costs. All data stays in a local SQLite file inside a ~20 MB Docker image.
 
 Solves the three LinearMCP pain points:
@@ -12,7 +17,26 @@ Solves the three LinearMCP pain points:
 
 ---
 
-## Quick Start
+## 📑 Contents
+
+- [🚀 Quick Start](#-quick-start)
+- [💻 Local Development](#local-development)
+- [📦 TOON Format](#toon-format)
+- [🛠️ MCP Tools Reference](#mcp-tools-reference)
+- [🔄 Workflows](#workflows)
+- [🗄️ Architecture](#architecture)
+- [➕ Adding a New Tool](#adding-a-new-tool)
+- [🧩 Multi-Project Setup](#multi-project-setup)
+- [🛡️ Data Safety](#data-safety)
+- [🧪 Testing](#testing)
+- [🐳 Building](#building)
+- [🤝 Contributing](#contributing)
+- [🙏 Acknowledgments](#acknowledgments)
+- [📜 License](#license)
+
+---
+
+## 🚀 Quick Start
 
 ```bash
 # 1. Clone and onboard (auto-detects Claude Code, Cursor, Copilot, Windsurf, Zed)
@@ -35,7 +59,7 @@ claude mcp add orkestra-myapp --transport http http://localhost:8080/sse
 
 ---
 
-## Local Development
+## 💻 Local Development
 
 No Docker required for development. You need Go 1.22+.
 
@@ -73,7 +97,7 @@ sqlite3 /tmp/dev.db "SELECT id, title, status, priority FROM tickets WHERE archi
 
 ---
 
-## TOON Format
+## 📦 TOON Format
 
 All tool responses use TOON (Tokens Object Oriented Notation) — a compact typed shorthand that cuts average ticket representation from ~400 tokens (JSON) to ~120 tokens.
 
@@ -118,7 +142,7 @@ TOON/1 ERR{code:invalid,msg:"exec_order must be unique within parent"}
 
 ---
 
-## MCP Tools Reference
+## 🛠️ MCP Tools Reference
 
 ### Ticket Lifecycle
 
@@ -150,7 +174,7 @@ TOON/1 ERR{code:invalid,msg:"exec_order must be unique within parent"}
 
 ---
 
-## Workflows
+## 🔄 Workflows
 
 ### Core loop
 
@@ -207,7 +231,7 @@ ticket_claim id=myapp-003           ticket_claim id=myapp-003
 
 ---
 
-## Architecture
+## 🗄️ Architecture
 
 ```
 HTTP request
@@ -240,6 +264,15 @@ Response path:
 | `internal/toon/`    | TOON encoder, Mermaid diagram generator                            |
 | `internal/mcp/`     | MCP server, all 13 tool handler registrations                      |
 
+**Skill documents (for LLM agents using this server):**
+
+| Document | What's Inside |
+| --- | --- |
+| [`skill/SKILL.md`](skill/SKILL.md) | LLM operator guide — when to use which tool, TOON cheat sheet, core workflow |
+| [`skill/references/api-guide.md`](skill/references/api-guide.md) | Full parameter reference for all 13 tools |
+| [`skill/references/examples.md`](skill/references/examples.md) | Annotated end-to-end workflow examples |
+| [`skill/references/troubleshooting.md`](skill/references/troubleshooting.md) | Error code recovery playbook |
+
 **Key design decisions:**
 
 - **SQLite WAL** — `PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;` with `SetMaxOpenConns(1)` for single-writer guarantee
@@ -250,7 +283,7 @@ Response path:
 
 ---
 
-## Adding a New Tool
+## ➕ Adding a New Tool
 
 Follow these four steps. Example: adding `ticket_reopen`.
 
@@ -320,7 +353,7 @@ go test ./...
 
 ---
 
-## Multi-Project Setup
+## 🧩 Multi-Project Setup
 
 Run one container per project on separate ports:
 
@@ -349,7 +382,7 @@ The LLM sees two namespaced tool sets (`orkestra-auth__ticket_create`, `orkestra
 
 ---
 
-## Data Safety
+## 🛡️ Data Safety
 
 Three layers:
 
@@ -359,7 +392,7 @@ Three layers:
 
 ---
 
-## Testing
+## 🧪 Testing
 
 ```bash
 # Run all tests
@@ -384,7 +417,7 @@ go test -v ./internal/toon/...
 
 ---
 
-## Building
+## 🐳 Building
 
 ```bash
 # Local binary
@@ -409,3 +442,26 @@ curl http://localhost:8080/health | jq .
 # Inspect skill document served by the running server
 curl http://localhost:8080/skill
 ```
+
+---
+
+## 🤝 Contributing
+
+Pull requests, bug reports, and feature ideas are all welcome.
+
+- **Setup, conventions, PR checklist** → [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Community standards** → [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- **Security disclosure** → [SECURITY.md](SECURITY.md)
+- **What changed when** → [CHANGELOG.md](CHANGELOG.md)
+
+---
+
+## 🙏 Acknowledgments
+
+Orkestra stands on the shoulders of `mcp-go`, `modernc.org/sqlite`, and the rest of the Go ecosystem. See [ACKNOWLEDGMENTS.md](ACKNOWLEDGMENTS.md) for the full list.
+
+---
+
+## 📜 License
+
+MIT — see [LICENSE](LICENSE). Use it, fork it, ship it.

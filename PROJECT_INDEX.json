@@ -1,0 +1,90 @@
+{
+  "project": "Orkestra",
+  "generated": "2026-04-27",
+  "language": "Go",
+  "go_version": "1.26.2",
+  "module": "github.com/vijay431/orkestra",
+  "summary": "Self-hosted MCP ticket server exposing 13 MCP tools to LLM agents, backed by SQLite (WAL + FTS5), using TOON encoding for compact responses.",
+  "loc_total_go": 3303,
+  "entry_points": {
+    "main": "cmd/server/main.go:26",
+    "mcp_server_constructor": "internal/mcp/server.go:43",
+    "mcp_server_start": "internal/mcp/server.go:73",
+    "tool_registration": "internal/mcp/tools.go:18"
+  },
+  "modules": {
+    "cmd/server": {
+      "files": ["main.go", "integration_test.go"],
+      "purpose": "Process entrypoint: env config, sqlite open, embedded migrations, MCP server bootstrap, optional backup loop"
+    },
+    "internal/ticket": {
+      "files": ["types.go", "store.go", "service.go"],
+      "purpose": "Domain layer",
+      "types": ["Ticket", "Comment", "Link", "CreateInput", "UpdateInput", "ListFilter", "Status", "Priority", "TicketType", "ExecMode", "LinkType"],
+      "store_methods": ["Create", "Get", "Update", "Claim", "Archive", "List", "Backlog", "Board", "Children", "ChildrenDeep", "AddComment", "AddLink", "Search", "Ping", "Backup"],
+      "service_methods": ["NewService", "RunBackupLoop", "doBackup", "pruneBackups", "LastBackup"]
+    },
+    "internal/toon": {
+      "files": ["encoder.go", "diagram.go", "schema.go"],
+      "purpose": "TOON encoding + Mermaid diagram generation",
+      "exports": ["Encode", "EncodePlain", "EncodeSummary", "EncodeBoard", "EncodeError", "EncodeOK", "EtagOf", "TicketErrCode", "GenerateDiagram", "ErrCode"]
+    },
+    "internal/mcp": {
+      "files": ["server.go", "tools.go"],
+      "purpose": "MCP transport (stdio + HTTP) and 13 tool handlers",
+      "tools": ["ticket_create", "ticket_get", "ticket_claim", "ticket_update", "ticket_archive", "ticket_list", "ticket_comment", "ticket_link", "ticket_search", "ticket_children", "ticket_backlog", "ticket_board", "ticket_diagram"],
+      "http_endpoints": ["/health", "/skill", "MCP endpoint"]
+    },
+    "internal/testutil": {
+      "files": ["db.go"],
+      "purpose": "Shared test DB helper"
+    },
+    "test/e2e": {
+      "files": ["mcp_e2e_test.go", "helpers_test.go"],
+      "purpose": "End-to-end MCP integration tests"
+    },
+    "migrations": {
+      "files": ["001_init.sql"],
+      "purpose": "Embedded schema via go:embed"
+    }
+  },
+  "design_decisions": {
+    "PROJECT_ID": "Mandatory env var; every query scoped to it",
+    "etag": "etag = updated_at, optimistic CAS on update",
+    "claim": "ticket_claim is atomic CAS, enforces seq ordering when exec_mode=seq",
+    "soft_delete": "archived_at column",
+    "encoding": "TOON for all tool responses",
+    "sqlite_driver": "modernc.org/sqlite (pure Go, no CGO)"
+  },
+  "config": {
+    "env_vars": ["PROJECT_ID", "DB_PATH", "TRANSPORT", "HTTP_ADDR", "AUTH_TOKEN", "BACKUP_DIR", "BACKUP_INTERVAL", "BACKUP_KEEP", "LOG_LEVEL"],
+    "files": ["go.mod", "Dockerfile", "docker-compose.yml", "Makefile", ".github/workflows/ci.yml", ".github/dependabot.yml"]
+  },
+  "docs": {
+    "user": ["README.md", "docs/quickstart.md", "docs/architecture.md", "docs/workflows.md", "docs/toon.md", "docs/data-safety.md"],
+    "operator": ["skill/SKILL.md", "skill/references/api-guide.md", "skill/references/examples.md", "skill/references/troubleshooting.md"],
+    "project": ["CLAUDE.md", "CONTRIBUTING.md", "SECURITY.md", "CODE_OF_CONDUCT.md", "CHANGELOG.md", "ACKNOWLEDGMENTS.md", "LICENSE"]
+  },
+  "tests": {
+    "unit": [
+      "internal/ticket/store_test.go",
+      "internal/ticket/service_test.go",
+      "internal/mcp/tools_test.go",
+      "internal/toon/encoder_test.go",
+      "internal/toon/diagram_test.go"
+    ],
+    "integration": ["cmd/server/integration_test.go"],
+    "e2e": ["test/e2e/mcp_e2e_test.go", "test/e2e/helpers_test.go"]
+  },
+  "dependencies": {
+    "direct": {
+      "github.com/mark3labs/mcp-go": "v0.49.0",
+      "modernc.org/sqlite": "v1.50.0"
+    }
+  },
+  "quick_start": [
+    "PROJECT_ID=myapp go run ./cmd/server",
+    "go test ./...",
+    "PROJECT_ID=myapp docker compose up -d"
+  ]
+}

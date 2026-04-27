@@ -1,0 +1,164 @@
+---
+layout: default
+title: Workflows
+nav_order: 6
+permalink: /workflows
+---
+
+# 🔄 Workflows
+{: .no_toc }
+
+Patterns that work. Steal them.
+{: .fs-5 .fw-300 }
+
+<details open markdown="block">
+  <summary>Table of contents</summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
+
+---
+
+## Core Loop
+
+The shape every agent uses:
+
+```mermaid
+flowchart LR
+    A([ticket_backlog]) --> B{Got<br/>work?}
+    B -->|yes| C([ticket_claim])
+    B -->|empty| Z((idle))
+    C -->|conflict| A
+    C -->|claimed| D[Do the work]
+    D --> E([ticket_update<br/>s=dn etag=ua])
+    E -->|conflict| F([ticket_get])
+    F --> E
+    E -->|ok| A
+```
+
+Three tools. That's the agent loop. The other 10 are for orchestration.
+
+```
+ticket_backlog                          → TOON/1 [T{id:myapp-003,...},...]
+ticket_claim id=myapp-003               → T{s:ip,...,ua:2024-01-15T10:05:22Z}
+                                        # save ua as etag
+(do the work)
+ticket_update id=myapp-003 s=dn etag=2024-01-15T10:05:22Z
+```
+
+---
+
+## Epic with Parallel Swarm
+
+When work decomposes into independent subtasks:
+
+```mermaid
+flowchart TD
+    E[Epic: Auth system<br/>typ=ep] --> A[JWT middleware<br/>em=par]
+    E --> B[OAuth provider<br/>em=par]
+    E --> C[Session store<br/>em=par]
+    A -.->|claimed by| W1[Agent 1]
+    B -.->|claimed by| W2[Agent 2]
+    C -.->|claimed by| W3[Agent 3]
+    style E fill:#FFE066
+```
+
+```
+ticket_create typ=ep t="Auth system"
+ticket_create parent_id=<epic> t="JWT middleware"
+ticket_create parent_id=<epic> t="OAuth provider"
+ticket_create parent_id=<epic> t="Session store"
+```
+
+`exec_mode=par` is the default. All three children land in `bk` and can be claimed concurrently by different agents — `ticket_claim` is atomic, so no two agents grab the same one.
+
+---
+
+## Sequential Pipeline
+
+When order matters:
+
+```mermaid
+flowchart LR
+    P[Pipeline: Deploy<br/>em=seq] --> S1[Run tests<br/>ord=1]
+    S1 -->|must be dn first| S2[Build image<br/>ord=2]
+    S2 -->|must be dn first| S3[Push to registry<br/>ord=3]
+    style P fill:#FFE066
+    style S1 fill:#9BE564
+    style S2 fill:#A0C4FF
+    style S3 fill:#FFC6FF
+```
+
+```
+ticket_create typ=tsk t="Deploy pipeline" em=seq
+ticket_create parent_id=<pipe> t="Run tests"        em=seq ord=1
+ticket_create parent_id=<pipe> t="Build image"      em=seq ord=2
+ticket_create parent_id=<pipe> t="Push to registry" em=seq ord=3
+```
+
+Now if Agent A tries `ticket_claim id=<ord-2>` before `<ord-1>` is `dn`:
+
+```
+→ ERR{code:seq_blocked,msg:"myapp-022 blocked: ord=1 not done"}
+```
+
+Agent A then calls `ticket_children` on the pipeline parent, finds `<ord-1>`, and either claims that or backs off.
+
+---
+
+## Etag Optimistic Locking
+
+The race condition you don't have to think about:
+
+```mermaid
+sequenceDiagram
+    participant A as Agent A
+    participant O as Orkestra
+    participant B as Agent B
+    A->>O: ticket_get id=myapp-001
+    O->>A: T{...,ua:T1}
+    B->>O: ticket_get id=myapp-001
+    O->>B: T{...,ua:T1}
+    A->>O: ticket_update id=myapp-001 etag=T1 s=dn
+    O->>A: T{...,ua:T2} ✓
+    B->>O: ticket_update id=myapp-001 etag=T1 s=bl
+    O->>B: ERR{code:conflict}
+    B->>O: ticket_get id=myapp-001
+    O->>B: T{...,ua:T2}
+    B->>O: ticket_update id=myapp-001 etag=T2 s=bl
+    O->>B: T{...,ua:T3} ✓
+```
+
+The etag is just `ua` (updated_at). Always send the freshest one you have. Stale = `ERR{code:conflict}` = re-read, decide, retry.
+
+---
+
+## Concurrent-Agent Coordination
+
+Multiple agents on the same backlog don't step on each other:
+
+```
+# Agent A                           # Agent B
+ticket_backlog                      ticket_backlog
+→ [myapp-003, myapp-004, ...]       → [myapp-003, myapp-004, ...]
+
+ticket_claim id=myapp-003           ticket_claim id=myapp-003
+→ T{s:ip,...}  ✓                    → ERR{code:conflict}  ← already claimed
+                                    ticket_claim id=myapp-004  ← next item
+                                    → T{s:ip,...}  ✓
+```
+
+The atomic CAS in `ticket_claim` is the whole coordination mechanism. No locks, no leases, no leader election.
+
+---
+
+## Recipe: When to Pick Which Pattern
+
+| You have... | Use... |
+|-------------|--------|
+| One task, one agent | Core loop |
+| One goal, many independent subtasks | Epic + parallel children (`em=par`) |
+| One goal, ordered subtasks | Pipeline + sequential children (`em=seq`) |
+| Mix: some parallel, some sequential | Nested parents — outer `em=par`, inner `em=seq` |
+| Multiple agents racing to clear a queue | Core loop, all agents call `ticket_backlog` then `ticket_claim` |
