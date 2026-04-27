@@ -1,0 +1,152 @@
+language: en-US
+
+reviews:
+  profile: chill
+  show_prompt: true
+  request_changes_workflow: false
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - dev
+      - main
+
+  summary:
+    auto_update: true
+
+  path_filters:
+    - '!go.sum'
+    - '!docs/package-lock.json'
+    - '!docs/dist/**'
+    - '!docs/node_modules/**'
+    - '!PROJECT_INDEX.json'
+    - '!PROJECT_INDEX.md'
+    - '!**/*.db'
+    - '!**/*.db-wal'
+    - '!**/*.db-shm'
+    - '!coverage.out'
+
+  path_instructions:
+    - path: 'internal/ticket/**/*.go'
+      instructions: |
+        This is the Orkestra ticket store and service layer (SQLite + FTS5).
+        - Every read and write MUST be scoped by `PROJECT_ID`. Flag any query that
+          omits the `project_id` predicate or accepts it as optional.
+        - Updates use optimistic locking via the `updated_at` etag. Flag updates
+          that do not compare-and-swap on `updated_at` or that mutate `updated_at`
+          out of band.
+        - Deletes are soft: set `archived_at`. Flag any hard `DELETE FROM tickets`
+          or equivalent.
+        - All DB access must go through the `Store` type. Flag direct
+          `database/sql` (or `*sql.DB`) usage in callers that bypasses `Store`.
+        - `ticket_claim` is an atomic CAS that enforces sequential ordering when
+          `exec_mode=seq`. Flag changes that introduce a read-then-write pattern,
+          drop the CAS predicate, or weaken the seq-mode invariant.
+        - FTS5 triggers must stay in sync with `tickets` schema changes; flag
+          column additions/renames in this layer that don't have a matching
+          migration update.
+
+    - path: 'internal/mcp/**/*.go'
+      instructions: |
+        This package implements the MCP tool handlers (mark3labs/mcp-go).
+        - Handlers must validate all inputs before touching the service layer.
+        - Never `panic` from a handler; return MCP-shaped error responses.
+        - Do not leak raw SQL or internal error strings to the client; wrap with
+          a user-safe message and log the original server-side.
+        - The public surface is 13 MCP tools. Flag PRs that remove or rename a
+          tool without a corresponding doc/skill update; additions are fine but
+          must follow the existing handler pattern.
+        - Handlers must call into `internal/ticket` service methods rather than
+          executing SQL directly.
+
+    - path: 'internal/toon/**/*.go'
+      instructions: |
+        TOON (compact ticket notation) encoder and Mermaid diagram generator.
+        - The whole point of TOON is ~60–70% fewer tokens than JSON. Flag
+          changes that re-introduce JSON-style verbosity (quoted keys,
+          redundant whitespace, repeated field names per row).
+        - There is a TOON parity test on the docs side (`docs/` `npm test`).
+          Encoder format changes here must be matched there or the docs CI
+          job will fail.
+        - Mermaid output must remain deterministic for a given input
+          (stable ordering); flag map-iteration-based output without sorting.
+
+    - path: 'cmd/server/**/*.go'
+      instructions: |
+        Server entrypoint, DB init, and migration runner.
+        - Migrations are loaded via `go:embed`. Flag any runtime filesystem
+          read of `migrations/*.sql` — it must stay embedded.
+        - `PROJECT_ID` is mandatory; the server must fail-fast at startup if
+          it is unset or empty.
+        - SQLite is opened with WAL mode and single-writer assumptions. Flag
+          changes that open additional writer connections or disable WAL.
+
+    - path: 'migrations/*.sql'
+      instructions: |
+        Migrations are append-only and forward-only.
+        - Never edit an existing migration file in place; add a new numbered
+          migration instead.
+        - New migrations must be additive and FTS5-safe. If columns of a
+          virtual table or its content table change, the matching FTS5
+          rebuild triggers must be updated in the same migration.
+        - Avoid statements that require table rewrites on large DBs without
+          a clear justification.
+
+    - path: '**/*_test.go'
+      instructions: |
+        - Prefer helpers in `internal/testutil` (DB setup, fixtures) over
+          hand-rolled `sql.Open` / temp-file dance.
+        - Tests must not depend on real wall-clock time (use injected clocks
+          or fixed timestamps) and must not hit the network.
+        - E2E tests live under `test/e2e/` behind the `e2e` build tag; flag
+          e2e-style tests placed outside that tree.
+
+    - path: '.github/workflows/*.yml'
+      instructions: |
+        - Pin third-party actions by at least a major version tag (the repo
+          convention is `@v6` for first-party `actions/*`). Flag unpinned
+          `@main` / `@master` references.
+        - `actions/checkout` must set `persist-credentials: false` unless
+          the job explicitly needs to push.
+        - Do NOT add `pull_request_target` triggers without an explicit
+          security justification — they run with write tokens against
+          untrusted PR code.
+        - Keep `permissions:` minimal at the workflow or job level.
+
+    - path: 'docs/**'
+      instructions: |
+        Astro-based docs site that publishes to GitHub Pages from `main`.
+        - Package manager is npm (lockfile: `docs/package-lock.json`). Do
+          not introduce `pnpm-lock.yaml` or `yarn.lock`.
+        - Avoid runtime fetching from external services during build; the
+          site must build offline from repo contents.
+        - The TOON parity test under docs is the canonical cross-language
+          check for the encoder; flag changes that skip or weaken it.
+
+    - path: 'Dockerfile'
+      instructions: |
+        - Image must stay slim/distroless and run as a non-root user.
+        - `PROJECT_ID` must be supplied as an env var at runtime, not baked
+          into the image.
+        - Do not introduce CGO build steps; the project uses
+          `modernc.org/sqlite` (pure Go) intentionally.
+
+    - path: 'docker-compose.yml'
+      instructions: |
+        - `PROJECT_ID` must be passed via `environment:` and treated as
+          required.
+        - Persist the SQLite DB via a named volume; flag bind mounts to
+          host paths that would break portability.
+
+    - path: 'go.mod'
+      instructions: |
+        - The project intentionally uses `modernc.org/sqlite` (pure Go, no
+          CGO). Flag any addition of `github.com/mattn/go-sqlite3` or other
+          CGO-requiring SQLite drivers.
+        - Flag dependency additions that pull in large transitive trees
+          (cloud SDKs, ORMs) — Orkestra's design goal is a small, local,
+          dependency-light binary.
+
+chat:
+  auto_reply: true
