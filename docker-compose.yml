@@ -1,0 +1,32 @@
+services:
+  orkestra:
+    build: .
+    ports:
+      - "${PORT:-8080}:8080"
+    volumes:
+      - orkestra-data:/data
+    environment:
+      - PROJECT_ID=${PROJECT_ID}
+      - DB_PATH=/data/orkestra.db
+      - PORT=8080
+      - BIND_ADDR=${BIND_ADDR:-0.0.0.0}
+      - MCP_TOKEN=${MCP_TOKEN:-}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - BACKUP_DIR=/data/backups
+      - BACKUP_INTERVAL=${BACKUP_INTERVAL:-1h}
+      - BACKUP_KEEP=${BACKUP_KEEP:-24}
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  orkestra-data:
