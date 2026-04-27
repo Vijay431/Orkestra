@@ -1,0 +1,165 @@
+.ork-explorer { font-family: var(--sl-font); }
+
+.ork-explorer__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.ork-explorer__chips {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.ork-explorer__chip {
+  background: var(--ork-surface);
+  border: 1px solid var(--ork-border);
+  color: var(--ork-text-dim);
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--sl-font-mono);
+  font-size: 0.82rem;
+  transition: all 0.15s;
+}
+.ork-explorer__chip:hover { color: var(--ork-text); }
+.ork-explorer__chip[data-active='true'] {
+  border-color: var(--chip-tint);
+  color: var(--chip-tint);
+  background: color-mix(in srgb, var(--chip-tint) 12%, transparent);
+}
+.ork-explorer__search {
+  flex: 1;
+  min-width: 220px;
+  background: var(--ork-surface);
+  border: 1px solid var(--ork-border);
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  color: var(--ork-text);
+  font: inherit;
+  font-size: 0.9rem;
+}
+.ork-explorer__search:focus-visible {
+  outline: 2px solid var(--ork-teal);
+  outline-offset: 1px;
+}
+
+.ork-explorer__grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.85rem;
+}
+.ork-explorer__card {
+  background: var(--ork-surface);
+  border: 1px solid var(--ork-border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  position: relative;
+  transition: border-color 0.15s;
+}
+.ork-explorer__card:hover { border-color: var(--ork-teal-dim); }
+.ork-explorer__card[data-category='lifecycle']    { border-left: 3px solid var(--ork-teal);  }
+.ork-explorer__card[data-category='discovery']    { border-left: 3px solid var(--ork-green); }
+.ork-explorer__card[data-category='collaboration']{ border-left: 3px solid var(--ork-pink);  }
+
+.ork-explorer__card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.ork-explorer__name {
+  font-family: var(--sl-font-mono);
+  font-size: 0.95rem;
+  color: var(--ork-text);
+  background: transparent;
+  padding: 0;
+  border: 0;
+}
+.ork-explorer__category {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ork-text-faint);
+  font-family: var(--sl-font-mono);
+}
+.ork-explorer__summary {
+  margin: 0.5rem 0 0;
+  font-size: 0.88rem;
+  color: var(--ork-text-dim);
+  line-height: 1.5;
+}
+.ork-explorer__detail {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--ork-border);
+  font-size: 0.85rem;
+}
+.ork-explorer__detail h4 {
+  margin: 1rem 0 0.4rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ork-text-faint);
+  font-weight: 600;
+}
+.ork-explorer__detail h4:first-child { margin-top: 0; }
+.ork-explorer__detail table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--sl-font-mono);
+  font-size: 0.78rem;
+}
+.ork-explorer__detail th,
+.ork-explorer__detail td {
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--ork-border);
+}
+.ork-explorer__detail th {
+  color: var(--ork-text-faint);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+}
+.ork-explorer__req { color: var(--ork-gold); }
+.ork-explorer__returns,
+.ork-explorer__example {
+  display: block;
+  background: var(--ork-bg);
+  border: 1px solid var(--ork-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  font-family: var(--sl-font-mono);
+  font-size: 0.8rem;
+  color: var(--ork-green);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ork-explorer__errors { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.ork-explorer__errors code {
+  background: rgba(255, 100, 100, 0.1);
+  border: 1px solid rgba(255, 100, 100, 0.3);
+  color: var(--ork-red);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+}
+.ork-explorer__empty {
+  color: var(--ork-text-faint);
+  text-align: center;
+  padding: 3rem 0;
+}

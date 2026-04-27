@@ -1,0 +1,99 @@
+---
+const lines = [
+  { prompt: '$', text: 'PROJECT_ID=myapp go run ./cmd/server', delay: 0 },
+  { prompt: '▸', text: 'sqlite WAL ready · /data/orkestra.db', delay: 1.4 },
+  { prompt: '▸', text: 'mcp listener on :8080 · 13 tools registered', delay: 2.4 },
+  { prompt: '▸', text: 'TOON/1 · backups every 1h', delay: 3.4 },
+];
+---
+
+<div class="ork-term" role="img" aria-label="Terminal showing Orkestra startup">
+  <div class="ork-term__chrome">
+    <span></span><span></span><span></span>
+    <em>orkestra ~ self-hosted</em>
+  </div>
+  <pre class="ork-term__body">
+{lines.map((l, i) => (
+  <div class="ork-term__line" style={`--d:${l.delay}s`}>
+    <span class="ork-term__prompt" data-kind={l.prompt === '$' ? 'cmd' : 'log'}>{l.prompt}</span>
+    <span class="ork-term__text">{l.text}</span>
+    {i === lines.length - 1 && <span class="ork-term__cursor" aria-hidden="true">▍</span>}
+  </div>
+))}
+  </pre>
+</div>
+
+<style>
+  .ork-term {
+    background: linear-gradient(180deg, #0e141c 0%, #0a0e14 100%);
+    border: 1px solid var(--ork-border);
+    border-radius: 14px;
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(0, 173, 216, 0.08);
+    overflow: hidden;
+    font-family: var(--sl-font-mono);
+  }
+  .ork-term__chrome {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--ork-border);
+    background: var(--ork-surface);
+  }
+  .ork-term__chrome span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #2c3744;
+  }
+  .ork-term__chrome span:nth-child(1) { background: #ff5f56; }
+  .ork-term__chrome span:nth-child(2) { background: #ffbd2e; }
+  .ork-term__chrome span:nth-child(3) { background: #27c93f; }
+  .ork-term__chrome em {
+    margin-left: auto;
+    font-style: normal;
+    color: var(--ork-text-faint);
+    font-size: 0.8rem;
+  }
+  .ork-term__body {
+    margin: 0;
+    padding: 1.25rem 1.25rem 1.5rem;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--ork-text);
+    overflow-x: auto;
+    background: transparent;
+  }
+  .ork-term__line {
+    opacity: 0;
+    animation: orkType 0.4s ease-out forwards;
+    animation-delay: var(--d);
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+  }
+  .ork-term__prompt {
+    color: var(--ork-teal);
+    font-weight: 600;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .ork-term__prompt[data-kind='log'] { color: var(--ork-green); }
+  .ork-term__cursor {
+    margin-left: 0.25rem;
+    color: var(--ork-teal);
+    animation: orkBlink 1s steps(2) infinite;
+  }
+  @keyframes orkType {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes orkBlink {
+    50% { opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ork-term__line { animation: none; opacity: 1; }
+    .ork-term__cursor { animation: none; }
+  }
+</style>

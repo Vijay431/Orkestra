@@ -1,0 +1,111 @@
+---
+// Pure SVG/CSS animation. No JS — runs forever via CSS keyframes.
+// Shows an epic at top fanning out to four child tickets being claimed
+// by parallel agents with etag pulses.
+---
+
+<figure class="ork-swarm" aria-label="Agent swarm: epic fans out to four child tickets claimed in parallel">
+  <svg viewBox="0 0 640 360" role="img">
+    <defs>
+      <linearGradient id="ork-edge" x1="0" x2="1">
+        <stop offset="0" stop-color="#00ADD8" stop-opacity="0.6" />
+        <stop offset="1" stop-color="#00ADD8" stop-opacity="0.05" />
+      </linearGradient>
+    </defs>
+
+    <!-- Edges -->
+    <g stroke="url(#ork-edge)" stroke-width="2" fill="none">
+      <path d="M 320 70 C 320 130, 120 130, 120 200" />
+      <path d="M 320 70 C 320 130, 240 130, 240 200" />
+      <path d="M 320 70 C 320 130, 400 130, 400 200" />
+      <path d="M 320 70 C 320 130, 520 130, 520 200" />
+    </g>
+
+    <!-- Epic -->
+    <g transform="translate(320 50)">
+      <rect x="-90" y="-22" width="180" height="44" rx="10" fill="#FFE066" fill-opacity="0.12" stroke="#FFE066" />
+      <text text-anchor="middle" y="-2" font-family="JetBrains Mono, monospace" font-size="12" fill="#FFE066">EP myapp-100</text>
+      <text text-anchor="middle" y="14" font-family="Inter, sans-serif" font-size="11" fill="#9DA9B7">Auth system</text>
+    </g>
+
+    <!-- Children -->
+    <g class="ork-swarm__child" style="--delay: 0s">
+      <rect x="60" y="200" width="120" height="50" rx="8" fill="#0B0F14" stroke="#9BE564" />
+      <text x="120" y="220" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#9BE564">myapp-101</text>
+      <text x="120" y="236" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#9DA9B7">JWT middleware</text>
+      <circle class="ork-swarm__pulse" cx="120" cy="290" r="14" fill="none" stroke="#9BE564" />
+      <text x="120" y="295" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#9DA9B7">Agent A</text>
+    </g>
+
+    <g class="ork-swarm__child" style="--delay: 0.6s">
+      <rect x="180" y="200" width="120" height="50" rx="8" fill="#0B0F14" stroke="#A0C4FF" />
+      <text x="240" y="220" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#A0C4FF">myapp-102</text>
+      <text x="240" y="236" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#9DA9B7">OAuth provider</text>
+      <circle class="ork-swarm__pulse" cx="240" cy="290" r="14" fill="none" stroke="#A0C4FF" />
+      <text x="240" y="295" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#9DA9B7">Agent B</text>
+    </g>
+
+    <g class="ork-swarm__child" style="--delay: 1.2s">
+      <rect x="340" y="200" width="120" height="50" rx="8" fill="#0B0F14" stroke="#FFC6FF" />
+      <text x="400" y="220" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#FFC6FF">myapp-103</text>
+      <text x="400" y="236" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#9DA9B7">Session store</text>
+      <circle class="ork-swarm__pulse" cx="400" cy="290" r="14" fill="none" stroke="#FFC6FF" />
+      <text x="400" y="295" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#9DA9B7">Agent C</text>
+    </g>
+
+    <g class="ork-swarm__child" style="--delay: 1.8s">
+      <rect x="460" y="200" width="120" height="50" rx="8" fill="#0B0F14" stroke="#00ADD8" />
+      <text x="520" y="220" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#00ADD8">myapp-104</text>
+      <text x="520" y="236" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#9DA9B7">Audit log</text>
+      <circle class="ork-swarm__pulse" cx="520" cy="290" r="14" fill="none" stroke="#00ADD8" />
+      <text x="520" y="295" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#9DA9B7">Agent D</text>
+    </g>
+  </svg>
+  <figcaption>One epic. Four agents. <code>ticket_claim</code> is atomic — no two agents grab the same one.</figcaption>
+</figure>
+
+<style>
+  .ork-swarm {
+    margin: 2rem 0;
+  }
+  .ork-swarm svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .ork-swarm figcaption {
+    text-align: center;
+    color: var(--ork-text-dim);
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+  }
+  .ork-swarm__child {
+    opacity: 0;
+    animation: orkChild 6s ease-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+  .ork-swarm__pulse {
+    opacity: 0;
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: orkPulse 6s ease-out infinite;
+    animation-delay: calc(var(--delay, 0s) + 1.5s);
+  }
+  @keyframes orkChild {
+    0% { opacity: 0; transform: translateY(-20px); }
+    20%, 95% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; }
+  }
+  @keyframes orkPulse {
+    0% { opacity: 0; transform: scale(0.4); }
+    30% { opacity: 0.9; transform: scale(1); }
+    100% { opacity: 0; transform: scale(2); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ork-swarm__child,
+    .ork-swarm__pulse {
+      animation: none;
+      opacity: 1;
+    }
+  }
+</style>

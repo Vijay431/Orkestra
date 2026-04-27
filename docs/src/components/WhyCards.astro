@@ -1,0 +1,87 @@
+---
+const cards = [
+  {
+    eyebrow: 'Token economy',
+    title: 'TOON cuts ~65% off every reply',
+    body: 'Compact field aliases, enum codes, and bare values mean a 400-token JSON ticket lands in your context as ~120 TOON tokens.',
+    tint: 'gold',
+  },
+  {
+    eyebrow: 'Local-first',
+    title: 'Your tickets never leave the box',
+    body: 'A single ~20 MB Docker image. SQLite WAL. No telemetry, no phone-home, no cloud sync. The only network surface is the MCP HTTP listener.',
+    tint: 'teal',
+  },
+  {
+    eyebrow: 'Multi-agent native',
+    title: 'Atomic claim, etag locking, sequential gates',
+    body: 'Built so a swarm of agents can chew through a backlog without stepping on each other. No leader election, no leases — just one CAS.',
+    tint: 'green',
+  },
+];
+---
+
+<section class="ork-why">
+  {cards.map((c) => (
+    <article class="ork-why__card" data-tint={c.tint}>
+      <span class="ork-why__eyebrow">{c.eyebrow}</span>
+      <h3>{c.title}</h3>
+      <p>{c.body}</p>
+    </article>
+  ))}
+</section>
+
+<style>
+  .ork-why {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin: 4rem 0;
+  }
+  .ork-why__card {
+    position: relative;
+    padding: 1.75rem 1.5rem 1.5rem;
+    background: var(--ork-surface);
+    border: 1px solid var(--ork-border);
+    border-radius: 14px;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .ork-why__card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--tint, var(--ork-teal)), transparent 60%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .ork-why__card[data-tint='gold']  { --tint: var(--ork-gold);  }
+  .ork-why__card[data-tint='teal']  { --tint: var(--ork-teal);  }
+  .ork-why__card[data-tint='green'] { --tint: var(--ork-green); }
+  .ork-why__eyebrow {
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--tint);
+    margin-bottom: 0.75rem;
+  }
+  .ork-why__card h3 {
+    font-size: 1.15rem;
+    margin: 0 0 0.6rem;
+    color: var(--ork-text);
+    letter-spacing: -0.01em;
+  }
+  .ork-why__card p {
+    color: var(--ork-text-dim);
+    line-height: 1.55;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+</style>

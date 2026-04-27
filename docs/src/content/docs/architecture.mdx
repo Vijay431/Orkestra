@@ -1,26 +1,11 @@
 ---
-layout: default
 title: Architecture
-nav_order: 5
-permalink: /architecture
+description: How a request travels from your LLM agent to the SQLite file and back.
 ---
-
-# 🗄️ Architecture
-{: .no_toc }
 
 How a request travels from your LLM agent to the SQLite file and back.
-{: .fs-5 .fw-300 }
 
-<details open markdown="block">
-  <summary>Table of contents</summary>
-  {: .text-delta }
-- TOC
-{:toc}
-</details>
-
----
-
-## Request Path
+## Request path
 
 ```mermaid
 flowchart TD
@@ -37,16 +22,11 @@ flowchart TD
     C -->|encoded| G[internal/toon/encoder.go]
     G -->|TOON/1 string| B
     B -->|HTTP 200| A
-    style F fill:#003366,color:#fff
-    style B fill:#00ADD8,color:#fff
-    style G fill:#9BE564
 ```
 
 One round trip. No microservices, no message queues, no external state.
 
----
-
-## 📦 Package Map
+## Package map
 
 | Package | Responsibility | Lines (approx) |
 |---------|----------------|----------------|
@@ -57,9 +37,7 @@ One round trip. No microservices, no message queues, no external state.
 
 The whole thing is under 2,000 lines of Go.
 
----
-
-## 🧠 Key Design Decisions
+## Key design decisions
 
 ### Single-writer SQLite
 
@@ -108,15 +86,13 @@ If count > 0, the claim fails with `seq_blocked`.
 
 Every query carries `AND project_id = ?`. Run multiple Orkestra instances on different ports for different projects — they can't see each other's data even if pointed at the same DB file.
 
----
-
-## 🛡️ Data Safety
+## Data safety
 
 ```mermaid
 flowchart LR
     A[Write] -->|WAL journal| B[(orkestra.db)]
     B -.->|every BACKUP_INTERVAL| C[VACUUM INTO]
-    C --> D[/data/backups/orkestra-<ts>.db]
+    C --> D[/data/backups/orkestra-ts.db]
     D -->|keep last BACKUP_KEEP| E[old backups deleted]
 ```
 
@@ -126,9 +102,7 @@ Three layers:
 2. **Periodic VACUUM INTO** — atomic snapshot, runs every `BACKUP_INTERVAL`
 3. **Docker volume** — survives `docker compose down`; only `down -v` destroys it
 
----
-
-## 🐳 Container
+## Container
 
 The production image is `FROM scratch`:
 

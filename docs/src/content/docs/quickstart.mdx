@@ -1,26 +1,11 @@
 ---
-layout: default
-title: Quick Start
-nav_order: 2
-permalink: /quickstart
+title: Quickstart
+description: From zero to a running Orkestra MCP server, talking to your LLM agent, in under a minute.
 ---
-
-# 🚀 Quick Start
-{: .no_toc }
 
 From zero to a running MCP server, talking to your LLM agent, in under a minute.
-{: .fs-5 .fw-300 }
 
-<details open markdown="block">
-  <summary>Table of contents</summary>
-  {: .text-delta }
-- TOC
-{:toc}
-</details>
-
----
-
-## The 30-Second Path
+## The 30-second path
 
 ```bash
 git clone https://github.com/Vijay431/Orkestra
@@ -35,8 +20,6 @@ That's it. The installer:
 3. Detects your IDE and adds the MCP server config
 4. Verifies the connection with a `/health` ping
 
----
-
 ## Verify
 
 ```bash
@@ -50,9 +33,7 @@ If your agent is Claude Code, ask it:
 
 You should see `TOON/1 [...]` come back — possibly empty if you haven't created any tickets yet.
 
----
-
-## What Gets Auto-Configured
+## What gets auto-configured
 
 ```mermaid
 flowchart TD
@@ -73,9 +54,7 @@ flowchart TD
 
 The installer is idempotent — re-running it updates the config in place.
 
----
-
-## 💻 Local Development (no Docker)
+## Local development (no Docker)
 
 You only need Go 1.22+:
 
@@ -85,9 +64,7 @@ PROJECT_ID=dev DB_PATH=/tmp/dev.db go run ./cmd/server
 
 The server starts on `:8080` and creates the SQLite file at `/tmp/dev.db`.
 
----
-
-## 🔧 Environment Variables
+## Environment variables
 
 | Variable | Default | What it does |
 |----------|---------|--------------|
@@ -101,9 +78,7 @@ The server starts on `:8080` and creates the SQLite file at `/tmp/dev.db`.
 | `BACKUP_INTERVAL` | `1h` | Go duration string (`30m`, `2h`, `24h`...) |
 | `BACKUP_KEEP` | `24` | Backup retention count |
 
----
-
-## 🗄️ Inspecting the Database
+## Inspecting the database
 
 ```bash
 sqlite3 /tmp/dev.db ".tables"
@@ -112,10 +87,8 @@ sqlite3 /tmp/dev.db "SELECT id, title, status, priority FROM tickets WHERE archi
 
 Or open it with [DB Browser for SQLite](https://sqlitebrowser.org).
 
----
+## Next: pick your workflow
 
-## Next: Pick Your Workflow
-
-- **[Core loop →]({{ site.baseurl }}/workflows#core-loop)** The 3-tool agent loop
-- **[Epics →]({{ site.baseurl }}/workflows#epic-with-parallel-swarm)** Spawn parallel subtask trees
-- **[Sequential pipelines →]({{ site.baseurl }}/workflows#sequential-pipeline)** Enforce ordering with `exec_mode=seq`
+- **[Core loop →](./workflows#core-loop)** the 3-tool agent loop
+- **[Epics →](./workflows#epic-with-parallel-swarm)** spawn parallel subtask trees
+- **[Sequential pipelines →](./workflows#sequential-pipeline)** enforce ordering with `exec_mode=seq`

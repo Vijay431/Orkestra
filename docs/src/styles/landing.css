@@ -1,0 +1,216 @@
+/* Landing page styles. Scoped via .ork-* classnames so they don't leak into Starlight. */
+
+.ork-landing {
+  margin: 0;
+  background:
+    radial-gradient(900px 500px at 80% -10%, rgba(0, 173, 216, 0.15), transparent 60%),
+    radial-gradient(700px 400px at 0% 20%, rgba(255, 224, 102, 0.06), transparent 60%),
+    radial-gradient(800px 600px at 50% 110%, rgba(155, 229, 100, 0.05), transparent 60%),
+    var(--ork-bg);
+  color: var(--ork-text);
+  font-family: var(--sl-font);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+.ork-landing main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 1.5rem 5rem;
+}
+
+/* Nav */
+.ork-nav {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.ork-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: var(--ork-text);
+  font-size: 1.1rem;
+}
+.ork-nav__links {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ork-nav__links a {
+  color: var(--ork-text-dim);
+  text-decoration: none;
+  font-size: 0.92rem;
+  transition: color 0.15s;
+}
+.ork-nav__links a:hover { color: var(--ork-text); }
+
+/* Hero */
+.ork-hero {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  padding: 3rem 0 5rem;
+}
+@media (max-width: 900px) {
+  .ork-hero { grid-template-columns: 1fr; }
+}
+.ork-hero__pill {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--ork-border);
+  border-radius: 999px;
+  font-family: var(--sl-font-mono);
+  font-size: 0.75rem;
+  color: var(--ork-text-dim);
+  margin-bottom: 1.25rem;
+}
+.ork-hero h1 {
+  font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  margin: 0 0 1.25rem;
+  font-weight: 700;
+}
+.ork-grad {
+  background: linear-gradient(120deg, #00ADD8 0%, #9BE564 50%, #FFE066 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ork-hero__lede {
+  font-size: 1.1rem;
+  color: var(--ork-text-dim);
+  margin: 0 0 2rem;
+  max-width: 560px;
+}
+.ork-hero__lede strong { color: var(--ork-text); font-weight: 600; }
+.ork-hero__cta {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+.ork-hero__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem 2.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ork-hero__stats li {
+  display: flex;
+  flex-direction: column;
+}
+.ork-hero__stats strong {
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+  color: var(--ork-teal);
+  font-family: var(--sl-font-mono);
+}
+.ork-hero__stats span {
+  font-size: 0.85rem;
+  color: var(--ork-text-faint);
+  margin-top: 0.15rem;
+}
+
+/* Buttons */
+.ork-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid var(--ork-border);
+  background: transparent;
+  color: var(--ork-text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+.ork-btn:hover {
+  border-color: var(--ork-teal);
+  color: var(--ork-teal);
+  transform: translateY(-1px);
+}
+.ork-btn--primary {
+  background: var(--ork-teal);
+  border-color: var(--ork-teal);
+  color: #001016;
+}
+.ork-btn--primary:hover {
+  background: #6FE3FF;
+  border-color: #6FE3FF;
+  color: #001016;
+}
+
+/* Sections */
+.ork-section { margin: 5rem 0; }
+.ork-section__head { max-width: 720px; margin: 0 0 2rem; }
+.ork-section__head h2 {
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  letter-spacing: -0.02em;
+  margin: 0.4rem 0 0.7rem;
+}
+.ork-section__head p {
+  color: var(--ork-text-dim);
+  margin: 0;
+  font-size: 1rem;
+}
+.ork-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ork-teal);
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--sl-font-mono);
+}
+
+/* CTA */
+.ork-cta {
+  text-align: center;
+  padding: 4rem 1.5rem;
+  background: var(--ork-surface);
+  border: 1px solid var(--ork-border);
+  border-radius: 18px;
+}
+.ork-cta h2 {
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+}
+.ork-cta p {
+  color: var(--ork-text-dim);
+  max-width: 620px;
+  margin: 0 auto 2rem;
+}
+.ork-cta__buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Footer */
+.ork-footer {
+  max-width: 1180px;
+  margin: 4rem auto 2rem;
+  padding: 2rem 1.5rem;
+  border-top: 1px solid var(--ork-border);
+  color: var(--ork-text-dim);
+  font-size: 0.9rem;
+}
+.ork-footer a { color: var(--ork-teal); text-decoration: none; }
+.ork-footer__sub {
+  margin-top: 0.4rem;
+  color: var(--ork-text-faint);
+  font-size: 0.85rem;
+}

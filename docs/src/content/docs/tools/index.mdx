@@ -1,20 +1,16 @@
 ---
-layout: default
-title: Tools
-nav_order: 4
-has_children: true
-permalink: /tools/
+title: All Tools
+description: 13 MCP tools for ticket lifecycle, discovery, and collaboration. Filter, search, and inspect every parameter.
 ---
 
-# 🛠️ MCP Tools
-{: .no_toc }
+import ToolExplorer from '../../../islands/ToolExplorer.tsx';
+import '../../../styles/explorer.css';
 
-13 tools, three categories. Pick the one that matches your intent.
-{: .fs-5 .fw-300 }
+13 tools, three categories. Filter by category, search by keyword, click any card to expand its full schema.
 
----
+<ToolExplorer client:visible />
 
-## At-a-Glance
+## At a glance
 
 ```mermaid
 flowchart TB
@@ -39,9 +35,7 @@ flowchart TB
     end
 ```
 
----
-
-## 🔵 Lifecycle (5)
+## Lifecycle (5)
 
 | Tool | Required | Returns | When |
 |------|----------|---------|------|
@@ -51,11 +45,9 @@ flowchart TB
 | `ticket_update` | `id` | `T{...}` | Changing any field (always send `etag`) |
 | `ticket_archive` | `id` | `{ok:true}` | Hiding finished work |
 
----
+## Discovery (6)
 
-## 🟢 Discovery (6)
-
-| Tool | Returns | Best For |
+| Tool | Returns | Best for |
 |------|---------|----------|
 | `ticket_list` | `[T{...}]` | Filtered queries (`status`, `type`, `labels`) |
 | `ticket_backlog` | `[T{...}]` priority-ordered | **Start here.** "What should I work on?" |
@@ -64,9 +56,7 @@ flowchart TB
 | `ticket_children` | `[T{...}]` | Listing subtasks of a parent |
 | `ticket_diagram` | Mermaid flowchart | Visualizing a hierarchy |
 
----
-
-## 🟣 Collaboration (2)
+## Collaboration (2)
 
 | Tool | Required | Returns |
 |------|----------|---------|
@@ -75,10 +65,8 @@ flowchart TB
 
 `link_type` is `blk` (blocks), `rel` (relates), or `dup` (duplicates).
 
----
+## Deeper reference
 
-## 📚 Deeper Reference
-
-- **[API Guide]({{ site.baseurl }}/tools/api-guide)** — every parameter, every default
-- **[Examples]({{ site.baseurl }}/tools/examples)** — annotated end-to-end workflows
-- **[Troubleshooting]({{ site.baseurl }}/tools/troubleshooting)** — error code recovery playbook
+- **[API Guide](./api-guide)** — every parameter, every default
+- **[Examples](./examples)** — annotated end-to-end workflows
+- **[Troubleshooting](./troubleshooting)** — error code recovery playbook
