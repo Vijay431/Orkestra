@@ -7,6 +7,8 @@
 
 Self-hosted MCP ticket server for autonomous LLM agents. No cloud, no rate limits, no per-request costs. All data stays in a local SQLite file inside a ~20 MB Docker image.
 
+Orkestra also includes a read-only Kanban board accessible at `http://127.0.0.1:7777` when running locally. The board gives a live overview of all tickets grouped by status — useful for monitoring agent progress without invoking an MCP tool. It is served by an embedded HTTP server and can be disabled or rebound via the `WEB_ENABLED` / `WEB_ADDR` environment variables.
+
 Solves the three LinearMCP pain points:
 
 | Pain Point                 | Orkestra Solution                     |
@@ -84,6 +86,8 @@ curl http://localhost:8080/health
 | `BACKUP_DIR`      | `/data/backups`     | Backup destination directory                             |
 | `BACKUP_INTERVAL` | `1h`                | Backup frequency (Go duration string)                    |
 | `BACKUP_KEEP`     | `24`                | Number of backup files to retain                         |
+| `WEB_ENABLED`     | `true`              | Set to `false` to disable the web UI                     |
+| `WEB_ADDR`        | `127.0.0.1:7777`    | Bind address for the web UI (localhost-only by default)  |
 
 **Browsing the database:**
 

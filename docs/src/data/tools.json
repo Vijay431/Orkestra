@@ -1,0 +1,161 @@
+[
+  {
+    "name": "ticket_create",
+    "category": "lifecycle",
+    "summary": "Create a new ticket. Always lands in backlog (s=bk).",
+    "required": ["title"],
+    "params": [
+      { "name": "title", "type": "string", "required": true, "notes": "Non-empty" },
+      { "name": "type", "type": "enum", "default": "tsk", "notes": "bug · ft · tsk · ep · chr" },
+      { "name": "priority", "type": "enum", "default": "m", "notes": "cr · h · m · l" },
+      { "name": "description", "type": "string" },
+      { "name": "labels", "type": "string[]", "default": "[]" },
+      { "name": "parent_id", "type": "string", "notes": "Parent ticket ID" },
+      { "name": "exec_mode", "type": "enum", "default": "par", "notes": "par · seq" },
+      { "name": "exec_order", "type": "integer", "notes": "Required for seq children; UNIQUE(parent_id, exec_order)" }
+    ],
+    "returns": "T{...}",
+    "example": "TOON/1 T{id:myapp-011,t:Fix login bug,s:bk,p:h,typ:bug,ca:2024-01-15,ua:2024-01-15T10:00:00Z}"
+  },
+  {
+    "name": "ticket_get",
+    "category": "lifecycle",
+    "summary": "Fetch a single ticket with full relations (comments, links, child IDs).",
+    "required": ["id"],
+    "params": [{ "name": "id", "type": "string", "required": true }],
+    "returns": "T{...} including cmt, lnk, ch arrays",
+    "errors": ["not_found"]
+  },
+  {
+    "name": "ticket_claim",
+    "category": "lifecycle",
+    "summary": "Atomically take ownership. Moves bk/td/bl → ip.",
+    "required": ["id"],
+    "params": [{ "name": "id", "type": "string", "required": true }],
+    "returns": "T{s:ip,...} — save ua as your etag",
+    "errors": ["conflict", "seq_blocked", "not_found"]
+  },
+  {
+    "name": "ticket_update",
+    "category": "lifecycle",
+    "summary": "Update any field. Always supply etag when working with concurrent agents.",
+    "required": ["id"],
+    "params": [
+      { "name": "id", "type": "string", "required": true },
+      { "name": "etag", "type": "string", "notes": "ua from last read; stale → conflict" },
+      { "name": "title", "type": "string" },
+      { "name": "status", "type": "enum", "notes": "bk · td · ip · dn · bl · cl" },
+      { "name": "priority", "type": "enum" },
+      { "name": "type", "type": "enum" },
+      { "name": "description", "type": "string" },
+      { "name": "assignee", "type": "string" },
+      { "name": "labels", "type": "string[]", "notes": "Replaces entire array" },
+      { "name": "exec_mode", "type": "enum" },
+      { "name": "exec_order", "type": "integer" }
+    ],
+    "returns": "T{...}",
+    "errors": ["conflict", "not_found", "invalid"]
+  },
+  {
+    "name": "ticket_archive",
+    "category": "lifecycle",
+    "summary": "Soft-delete. Sets archived_at. Excluded from all queries.",
+    "required": ["id"],
+    "params": [{ "name": "id", "type": "string", "required": true }],
+    "returns": "{ok:true}"
+  },
+  {
+    "name": "ticket_list",
+    "category": "discovery",
+    "summary": "Filter tickets across any combination of fields. Ordered by created_at DESC.",
+    "params": [
+      { "name": "status", "type": "enum" },
+      { "name": "priority", "type": "enum" },
+      { "name": "type", "type": "enum" },
+      { "name": "labels", "type": "string[]", "notes": "AND filter" },
+      { "name": "limit", "type": "integer", "default": "50", "notes": "max 200" },
+      { "name": "include_archived", "type": "boolean", "default": "false" }
+    ],
+    "returns": "[T{...}]"
+  },
+  {
+    "name": "ticket_backlog",
+    "category": "discovery",
+    "summary": "Priority-ordered view of bk tickets. Use this to decide what to do next.",
+    "params": [
+      { "name": "priority", "type": "enum" },
+      { "name": "type", "type": "enum" },
+      { "name": "labels", "type": "string[]" },
+      { "name": "limit", "type": "integer", "default": "50" }
+    ],
+    "returns": "[T{...}] ordered cr → h → m → l, oldest-first within priority"
+  },
+  {
+    "name": "ticket_board",
+    "category": "discovery",
+    "summary": "Kanban snapshot grouped by status.",
+    "params": [
+      { "name": "type", "type": "enum" },
+      { "name": "labels", "type": "string[]" }
+    ],
+    "returns": "BOARD{bk:[...],td:[...],ip:[...],dn:[...],bl:[...],cl:[...]}"
+  },
+  {
+    "name": "ticket_search",
+    "category": "discovery",
+    "summary": "Full-text search across title, description, labels via SQLite FTS5.",
+    "required": ["query"],
+    "params": [
+      { "name": "query", "type": "string", "required": true, "notes": "FTS5-ranked; supports phrase search" },
+      { "name": "include_archived", "type": "boolean", "default": "false" }
+    ],
+    "returns": "[T{...}] ranked by relevance"
+  },
+  {
+    "name": "ticket_children",
+    "category": "discovery",
+    "summary": "List children of a ticket, sorted by exec_order.",
+    "required": ["id"],
+    "params": [
+      { "name": "id", "type": "string", "required": true },
+      { "name": "recursive", "type": "boolean", "default": "false" },
+      { "name": "depth", "type": "integer", "default": "3", "notes": "1-10; only when recursive=true" }
+    ],
+    "returns": "[T{...}]"
+  },
+  {
+    "name": "ticket_diagram",
+    "category": "discovery",
+    "summary": "Mermaid flowchart of ticket hierarchy with status colors.",
+    "required": ["id"],
+    "params": [
+      { "name": "id", "type": "string", "required": true, "notes": "Root of the diagram" },
+      { "name": "depth", "type": "integer", "default": "3", "notes": "1-10" }
+    ],
+    "returns": "Mermaid flowchart TD"
+  },
+  {
+    "name": "ticket_comment",
+    "category": "collaboration",
+    "summary": "Append a note to a ticket.",
+    "required": ["id", "body"],
+    "params": [
+      { "name": "id", "type": "string", "required": true },
+      { "name": "body", "type": "string", "required": true },
+      { "name": "author", "type": "string", "default": "llm" }
+    ],
+    "returns": "Updated T{...} with new entry in cmt"
+  },
+  {
+    "name": "ticket_link",
+    "category": "collaboration",
+    "summary": "Create a directional relationship between two tickets.",
+    "required": ["from_id", "to_id", "link_type"],
+    "params": [
+      { "name": "from_id", "type": "string", "required": true },
+      { "name": "to_id", "type": "string", "required": true },
+      { "name": "link_type", "type": "enum", "required": true, "notes": "blk · rel · dup" }
+    ],
+    "returns": "{ok:true} (idempotent)"
+  }
+]

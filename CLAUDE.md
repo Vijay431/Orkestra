@@ -10,6 +10,7 @@ See `skill/SKILL.md` for the LLM operator guide (tool selection, TOON format, wo
 - `internal/ticket/` — domain types, store (SQLite CRUD + FTS5), service (business logic + backup)
 - `internal/toon/` — TOON encoder, Mermaid diagram generator
 - `internal/mcp/` — MCP server, all 13 tool handlers
+- `internal/web/` — embedded HTTP server; read-only Kanban UI on port 7777 (go:embed)
 
 ## Key Design Decisions
 

@@ -1,0 +1,148 @@
+---
+import TerminalHero from '../components/TerminalHero.astro';
+import WhyCards from '../components/WhyCards.astro';
+import InstallTabs from '../components/InstallTabs.astro';
+import SwarmVisualizer from '../components/SwarmVisualizer.astro';
+import ToonPlayground from '../islands/ToonPlayground.tsx';
+import ToolExplorer from '../islands/ToolExplorer.tsx';
+import '../styles/global.css';
+import '../styles/landing.css';
+import '../styles/playground.css';
+import '../styles/explorer.css';
+
+const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
+const link = (p: string) => `${baseUrl}${p}`;
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Orkestra — Self-hosted MCP ticket server for swarming agents</title>
+    <meta
+      name="description"
+      content="Self-hosted MCP ticket server for autonomous LLM agents. Local SQLite, TOON-encoded responses, atomic claims, etag locking. No cloud, no rate limits."
+    />
+    <link rel="icon" type="image/svg+xml" href={link('/favicon.svg')} />
+    <meta property="og:title" content="Orkestra — local MCP ticket server" />
+    <meta property="og:description" content="Self-hosted ticketing for swarming LLM agents." />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  </head>
+  <body class="ork-landing">
+    <header class="ork-nav">
+      <a class="ork-nav__brand" href={link('/')}>
+        <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="22" fill="none" stroke="#00ADD8" stroke-width="3" />
+          <circle cx="32" cy="32" r="6" fill="#00ADD8" />
+          <circle cx="32" cy="14" r="3" fill="#FFE066" />
+          <circle cx="50" cy="32" r="3" fill="#9BE564" />
+          <circle cx="32" cy="50" r="3" fill="#A0C4FF" />
+          <circle cx="14" cy="32" r="3" fill="#FFC6FF" />
+        </svg>
+        <strong>Orkestra</strong>
+      </a>
+      <nav class="ork-nav__links">
+        <a href={link('/quickstart')}>Quickstart</a>
+        <a href={link('/toon')}>TOON</a>
+        <a href={link('/tools')}>Tools</a>
+        <a href={link('/workflows')}>Workflows</a>
+        <a href={link('/architecture')}>Architecture</a>
+        <a href="https://github.com/Vijay431/Orkestra" target="_blank" rel="noopener">GitHub ↗</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="ork-hero">
+        <div class="ork-hero__copy">
+          <span class="ork-hero__pill">v1.0 · MIT · self-hosted</span>
+          <h1>
+            Local ticketing your <span class="ork-grad">LLM agents</span> can swarm against.
+          </h1>
+          <p class="ork-hero__lede">
+            Orkestra is a single ~20 MB Docker container that exposes 13 MCP tools and replies
+            in <strong>TOON</strong> — a compact format that cuts ~65% off every response.
+            No cloud. No rate limits. No per-request bill.
+          </p>
+          <div class="ork-hero__cta">
+            <a class="ork-btn ork-btn--primary" href={link('/quickstart')}>Get started →</a>
+            <a class="ork-btn" href="https://github.com/Vijay431/Orkestra" target="_blank" rel="noopener">
+              View on GitHub
+            </a>
+          </div>
+          <ul class="ork-hero__stats">
+            <li><strong>13</strong><span>MCP tools</span></li>
+            <li><strong>~65%</strong><span>fewer tokens</span></li>
+            <li><strong>~20 MB</strong><span>container</span></li>
+            <li><strong>0</strong><span>cloud calls</span></li>
+          </ul>
+        </div>
+        <div class="ork-hero__visual">
+          <TerminalHero />
+        </div>
+      </section>
+
+      <section class="ork-section">
+        <header class="ork-section__head">
+          <span class="ork-eyebrow">Live demo</span>
+          <h2>Why TOON wins on tokens</h2>
+          <p>
+            Edit the JSON on the left. The right side is what your agent actually sees in its
+            context window. The badge in the middle is the savings.
+          </p>
+        </header>
+        <ToonPlayground client:visible />
+      </section>
+
+      <WhyCards />
+
+      <section class="ork-section">
+        <header class="ork-section__head">
+          <span class="ork-eyebrow">Multi-agent native</span>
+          <h2>Built for swarms, not single agents</h2>
+          <p>
+            Spawn an epic. Drop child tickets. Watch a fleet of agents pick them up in parallel —
+            <code>ticket_claim</code> is an atomic CAS, so no two agents ever grab the same ticket.
+          </p>
+        </header>
+        <SwarmVisualizer />
+      </section>
+
+      <section class="ork-section">
+        <header class="ork-section__head">
+          <span class="ork-eyebrow">13 tools, three categories</span>
+          <h2>Skim the surface area</h2>
+          <p>
+            Filter by category, search by keyword, click any card to expand its full schema.
+            Same data your agent sees on <code>/skill</code>.
+          </p>
+        </header>
+        <ToolExplorer client:visible />
+      </section>
+
+      <InstallTabs />
+
+      <section class="ork-section ork-cta">
+        <h2>Stop paying per ticket.</h2>
+        <p>
+          Orkestra runs offline, on your hardware, with the same MCP surface as the cloud
+          alternatives. MIT-licensed. Fork it, ship it.
+        </p>
+        <div class="ork-cta__buttons">
+          <a class="ork-btn ork-btn--primary" href={link('/quickstart')}>Read the quickstart</a>
+          <a class="ork-btn" href={link('/architecture')}>How it works →</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="ork-footer">
+      <div>
+        <strong>Orkestra</strong> · MIT-licensed ·
+        <a href="https://github.com/Vijay431/Orkestra">github.com/Vijay431/Orkestra</a>
+      </div>
+      <div class="ork-footer__sub">
+        Built for self-hosted agent workflows. No telemetry, no analytics, no tracking.
+      </div>
+    </footer>
+  </body>
+</html>

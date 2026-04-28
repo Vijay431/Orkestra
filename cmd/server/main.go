@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	stdlog "log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -18,6 +19,7 @@ import (
 
 	orkmcp "github.com/vijay431/orkestra/internal/mcp"
 	"github.com/vijay431/orkestra/internal/ticket"
+	"github.com/vijay431/orkestra/internal/web"
 )
 
 //go:embed 001_init.sql
@@ -31,12 +33,12 @@ func main() {
 		Port:      getenv("PORT", "8080"),
 		BindAddr:  getenv("BIND_ADDR", "0.0.0.0"),
 		MCPToken:  os.Getenv("MCP_TOKEN"),
-		BackupDir: getenv("BACKUP_DIR", "/data/backups"),
+		BackupDir: getenv("BACKUP_DIR", "backups"),
 		BackupKeep: getenvInt("BACKUP_KEEP", 24),
 	}
 	cfg.BackupInterval = getenvDuration("BACKUP_INTERVAL", time.Hour)
 
-	dbPath := getenv("DB_PATH", "/data/orkestra.db")
+	dbPath := getenv("DB_PATH", "orkestra.db")
 	db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(ON)&_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)")
 	if err != nil {
 		log.Error("failed to open database", "path", dbPath, "err", err)
@@ -58,6 +60,18 @@ func main() {
 
 	// Backup goroutine
 	go svc.RunBackupLoop(ctx, dbPath, cfg.BackupDir, cfg.BackupInterval, cfg.BackupKeep)
+
+	// Web UI server
+	if os.Getenv("WEB_ENABLED") != "false" {
+		webAddr := getenv("WEB_ADDR", "127.0.0.1:7777")
+		h := web.New(svc, cfg.ProjectID)
+		go func() {
+			if err := web.Start(ctx, webAddr, h); err != nil {
+				stdlog.Printf("web: server stopped: %v", err)
+			}
+		}()
+		stdlog.Printf("web: listening on http://%s", webAddr)
+	}
 
 	// MCP server
 	srv := orkmcp.NewServer(cfg, svc, log)

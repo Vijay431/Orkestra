@@ -1,26 +1,16 @@
 ---
-layout: default
 title: TOON Format
-nav_order: 3
-permalink: /toon
+description: Tokens-Object-Oriented Notation — a compact typed shorthand designed for LLM context economy.
 ---
 
-# 📦 TOON Format
-{: .no_toc }
+import ToonPlayground from '../../islands/ToonPlayground.tsx';
+import LifecycleVisualizer from '../../islands/LifecycleVisualizer.tsx';
+import '../../styles/playground.css';
+import '../../styles/lifecycle.css';
 
 Tokens-Object-Oriented Notation. A compact typed shorthand designed for LLM context economy.
-{: .fs-5 .fw-300 }
 
-<details open markdown="block">
-  <summary>Table of contents</summary>
-  {: .text-delta }
-- TOC
-{:toc}
-</details>
-
----
-
-## Why a New Format?
+## Why a new format?
 
 JSON is great for machines. It's expensive for LLMs. Every quote, brace, and verbose field name costs tokens — and tokens cost money and context window.
 
@@ -34,9 +24,11 @@ pie title "Average ticket: token breakdown"
 
 TOON drops the field names down to 1–3 character aliases, kills the redundant quotes, and uses compact enum codes.
 
----
+## Try it
 
-## At a Glance
+<ToonPlayground client:visible />
+
+## At a glance
 
 ```
 TOON/1 T{id:myapp-001,t:"Fix auth bug",s:ip,p:h,typ:bug,lbl:[auth,sec],ca:2024-01-15,ua:2024-01-15T10:00:00Z}
@@ -51,9 +43,7 @@ Reading it:
 - `2024-01-15` — bare ISO date for `ca` (created_at)
 - `2024-01-15T10:00:00Z` — RFC3339 timestamp for `ua` (use as etag!)
 
----
-
-## 🏷️ Field Aliases
+## Field aliases
 
 | Full | TOON | Full | TOON |
 |------|------|------|------|
@@ -66,9 +56,7 @@ Reading it:
 | `assignee` | `as` | `links` | `lnk` |
 | `created_at` | `ca` | `updated_at` | `ua` |
 
----
-
-## 🔢 Enum Codes
+## Enum codes
 
 | Domain | Codes |
 |--------|-------|
@@ -78,30 +66,15 @@ Reading it:
 | **ExecMode** | `par` parallel · `seq` sequential |
 | **LinkType** | `blk` blocks · `rel` relates · `dup` duplicates |
 
----
+## Lifecycle
 
-## 🔄 Lifecycle
+Click a state to see which tools drive each transition:
 
-```mermaid
-stateDiagram-v2
-    [*] --> bk: ticket_create
-    bk --> td: refined
-    bk --> ip: ticket_claim
-    td --> ip: ticket_claim
-    ip --> dn: ticket_update s=dn
-    ip --> bl: blocked externally
-    bl --> ip: unblocked
-    bk --> cl: cancelled
-    ip --> cl: cancelled
-    dn --> [*]: ticket_archive
-    cl --> [*]: ticket_archive
-```
+<LifecycleVisualizer client:visible />
 
 The two terminal states are `dn` (done) and `cl` (cancelled). Both can be archived (soft-deleted) once you're done with them.
 
----
-
-## 📨 Envelope Types
+## Envelope types
 
 | Envelope | Shape | Used by |
 |----------|-------|---------|
@@ -113,14 +86,12 @@ The two terminal states are `dn` (done) and `cl` (cancelled). Both can be archiv
 | `{ok:true}` | Success acknowledgment | `ticket_archive`, `ticket_link` |
 | `ERR{code:X,msg:"..."}` | Error | All tools (on failure) |
 
----
-
-## ❗ Error Codes
+## Error codes
 
 | Code | Cause | Recovery |
 |------|-------|----------|
 | `not_found` | Ticket doesn't exist or is archived | Verify the ID; try `ticket_search` |
 | `conflict` | Etag stale OR ticket already claimed | `ticket_get` → retry with fresh `ua` |
 | `seq_blocked` | Sequential predecessor not done | Complete lower `exec_order` sibling first |
-| `invalid` | Schema violation (e.g. duplicate `exec_order`) | Check parameters against the [tool reference]({{ site.baseurl }}/tools/api-guide) |
+| `invalid` | Schema violation (e.g. duplicate `exec_order`) | Check parameters against the [tool reference](./tools/api-guide) |
 | `internal` | Server error | Retry once; check `/health` if it persists |

@@ -1,0 +1,166 @@
+---
+const tabs = [
+  {
+    id: 'auto',
+    label: 'Auto-install',
+    body: `git clone https://github.com/Vijay431/Orkestra
+cd Orkestra
+PROJECT_ID=myapp ./install.sh`,
+    note: 'Detects Claude Code · Cursor · Copilot · Windsurf · Zed · Continue.dev and wires up the MCP entry for you.',
+  },
+  {
+    id: 'docker',
+    label: 'Docker',
+    body: `PROJECT_ID=myapp docker compose up -d
+curl http://localhost:8080/health`,
+    note: 'Single ~20 MB scratch image. SQLite lives in a named volume; survives compose down (but not down -v).',
+  },
+  {
+    id: 'go',
+    label: 'Go',
+    body: `PROJECT_ID=dev DB_PATH=/tmp/dev.db go run ./cmd/server`,
+    note: 'Go 1.22+. Pure-Go SQLite (modernc.org/sqlite) — no CGO needed.',
+  },
+  {
+    id: 'claude',
+    label: 'Claude Code',
+    body: `claude mcp add orkestra-myapp \\
+  --transport http http://localhost:8080/sse`,
+    note: 'After the server is up, register it as an MCP endpoint.',
+  },
+];
+---
+
+<section class="ork-install">
+  <header class="ork-install__head">
+    <h2>30-second install</h2>
+    <p>Pick your setup. They all land at the same place: a local MCP endpoint your agent talks to.</p>
+  </header>
+
+  <div class="ork-install__tabs" role="tablist">
+    {tabs.map((t, i) => (
+      <button
+        class="ork-install__tab"
+        role="tab"
+        id={`ork-tab-${t.id}`}
+        aria-controls={`ork-panel-${t.id}`}
+        aria-selected={i === 0}
+        tabindex={i === 0 ? 0 : -1}
+        data-target={t.id}
+      >
+        {t.label}
+      </button>
+    ))}
+  </div>
+
+  {tabs.map((t, i) => (
+    <div
+      class="ork-install__panel"
+      role="tabpanel"
+      id={`ork-panel-${t.id}`}
+      aria-labelledby={`ork-tab-${t.id}`}
+      data-id={t.id}
+      hidden={i !== 0}
+    >
+      <pre>{t.body}</pre>
+      <p class="ork-install__note">{t.note}</p>
+    </div>
+  ))}
+</section>
+
+<script is:inline>
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll('.ork-install').forEach((root) => {
+      const tabs = Array.from(root.querySelectorAll('.ork-install__tab'));
+      const panels = root.querySelectorAll('.ork-install__panel');
+      const activate = (tab) => {
+        const target = tab.getAttribute('data-target');
+        tabs.forEach((t) => {
+          const sel = t === tab;
+          t.setAttribute('aria-selected', String(sel));
+          t.setAttribute('tabindex', sel ? '0' : '-1');
+        });
+        panels.forEach((p) => {
+          if (p.getAttribute('data-id') === target) p.removeAttribute('hidden');
+          else p.setAttribute('hidden', '');
+        });
+      };
+      tabs.forEach((tab) => tab.addEventListener('click', () => activate(tab)));
+      tabs.forEach((tab, i) =>
+        tab.addEventListener('keydown', (e) => {
+          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+          e.preventDefault();
+          const next =
+            e.key === 'Home' ? 0 :
+            e.key === 'End' ? tabs.length - 1 :
+            (i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+          tabs[next].focus();
+          activate(tabs[next]);
+        }),
+      );
+    });
+  });
+</script>
+
+<style>
+  .ork-install {
+    margin: 4rem 0;
+  }
+  .ork-install__head h2 {
+    margin: 0 0 0.4rem;
+    font-size: 1.6rem;
+    letter-spacing: -0.015em;
+  }
+  .ork-install__head p {
+    color: var(--ork-text-dim);
+    margin: 0 0 1.5rem;
+  }
+  .ork-install__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+  }
+  .ork-install__tab {
+    background: var(--ork-surface);
+    border: 1px solid var(--ork-border);
+    border-radius: 8px;
+    color: var(--ork-text-dim);
+    padding: 0.45rem 0.9rem;
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ork-install__tab:hover {
+    color: var(--ork-text);
+    border-color: var(--ork-teal-dim);
+  }
+  .ork-install__tab[aria-selected='true'] {
+    background: rgba(0, 173, 216, 0.1);
+    border-color: var(--ork-teal);
+    color: var(--ork-teal);
+  }
+  .ork-install__panel {
+    background: var(--ork-surface);
+    border: 1px solid var(--ork-border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+  }
+  .ork-install__panel pre {
+    margin: 0;
+    background: transparent;
+    color: var(--ork-text);
+    font-family: var(--sl-font-mono);
+    font-size: 0.92rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+  .ork-install__note {
+    color: var(--ork-text-dim);
+    font-size: 0.88rem;
+    margin: 1rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--ork-border);
+  }
+</style>

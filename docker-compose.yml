@@ -3,6 +3,7 @@ services:
     build: .
     ports:
       - "${PORT:-8080}:8080"
+      - "7777:7777"  # web UI (Kanban board)
     volumes:
       - orkestra-data:/data
     environment:
@@ -15,6 +16,8 @@ services:
       - BACKUP_DIR=/data/backups
       - BACKUP_INTERVAL=${BACKUP_INTERVAL:-1h}
       - BACKUP_KEEP=${BACKUP_KEEP:-24}
+      - WEB_ADDR=0.0.0.0:7777  # bind all interfaces inside container (required for port mapping)
+      # - WEB_ENABLED=false       # uncomment to disable the web UI
     deploy:
       resources:
         limits:
