@@ -226,7 +226,7 @@
               :aria-busy="loading"
               title="Refresh tickets"
               aria-label="Refresh tickets"
-              class="p-2 rounded-md hover:bg-gray-100 text-gray-600 disabled:opacity-50">
+              class="btn p-2 hover:bg-gray-100 text-gray-600 disabled:opacity-50">
         <span class="inline-block" :class="loading ? 'spin-anim' : ''" aria-hidden="true">↻</span>
       </button>
     </div>
@@ -245,7 +245,7 @@
         </button>
       </template>
       <button @click="filterLabels = []; announceFilterChange()"
-              class="text-xs text-gray-500 hover:text-gray-700 underline ml-2">Clear all</button>
+              class="btn text-xs text-gray-500 hover:text-gray-700 border-transparent bg-transparent underline ml-2">Clear all</button>
     </div>
   </template>
 
@@ -292,7 +292,7 @@
                       <span class="id-badge"
                             x-text="t.id"></span>
                     </div>
-                    <span class="pill shrink-0"
+                    <span class="shrink-0"
                           :class="priorityClass(t.priority)"
                           x-text="priorityLabel(t.priority)"></span>
                   </div>
@@ -387,11 +387,9 @@
           <h2 class="text-xl font-semibold leading-tight text-gray-900" x-text="selected.title"></h2>
 
           <div class="flex flex-wrap items-center gap-2">
-            <span class="pill"
-                  :class="statusClass(selected.status)"
+            <span :class="statusClass(selected.status)"
                   x-text="statusLabel(selected.status)"></span>
-            <span class="pill"
-                  :class="priorityClass(selected.priority)"
+            <span :class="priorityClass(selected.priority)"
                   x-text="priorityLabel(selected.priority) + ' priority'"></span>
             <span class="text-xs text-gray-600 px-2 py-1 rounded-full bg-gray-100"
                   x-text="typeLabel(selected.type)"></span>
