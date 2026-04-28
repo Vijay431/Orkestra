@@ -54,7 +54,7 @@
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after {
         animation: none !important;
-        transition-duration: 0.001ms !important;
+        transition: none !important;
       }
     }
 
@@ -257,10 +257,13 @@
          role="dialog"
          aria-modal="true"
          aria-labelledby="panel-title"
+         tabindex="-1"
          class="fixed top-0 right-0 h-full w-[420px] bg-white shadow-2xl z-50 flex flex-col"
          style="display: none;"
          @click.stop
          @keydown="trapFocus($event)">
+
+    <span id="panel-title" class="sr-only">Ticket details</span>
 
     <template x-if="panelLoading">
       <div class="flex-1 flex items-center justify-center text-gray-500 text-sm">
@@ -279,11 +282,11 @@
           <button @click="closePanel()"
                   title="Close panel"
                   aria-label="Close panel"
-                  class="text-gray-500 hover:text-gray-700 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100" aria-hidden="false">×</button>
+                  class="text-gray-500 hover:text-gray-700 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100">×</button>
         </header>
 
         <div class="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-          <h2 id="panel-title" class="text-xl font-semibold leading-tight text-gray-900" x-text="selected.title"></h2>
+          <h2 class="text-xl font-semibold leading-tight text-gray-900" x-text="selected.title"></h2>
 
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full"
@@ -420,6 +423,7 @@
             console.error('Failed to load data:', e);
           } finally {
             this.loading = false;
+            this.announcement = this.tickets.length + ' tickets loaded';
           }
         },
 
@@ -429,6 +433,10 @@
           this.panelLoading = true;
           this.selected = null;
           this.announcement = 'Loading ticket ' + id;
+          this.$nextTick(() => {
+            const dialog = this.$el.querySelector('[role="dialog"]');
+            if (dialog) dialog.focus();
+          });
           try {
             const res = await fetch('/api/tickets/' + encodeURIComponent(id));
             if (res.ok) {
@@ -455,7 +463,10 @@
           this.panelOpen = false;
           this.selected = null;
           if (this._lastFocusedCard && typeof this._lastFocusedCard.focus === 'function') {
-            this.$nextTick(() => this._lastFocusedCard.focus());
+            this.$nextTick(() => {
+              this._lastFocusedCard.focus();
+              this._lastFocusedCard = null;
+            });
           }
         },
 
