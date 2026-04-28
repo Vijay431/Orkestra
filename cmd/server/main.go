@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	stdlog "log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -18,6 +19,7 @@ import (
 
 	orkmcp "github.com/vijay431/orkestra/internal/mcp"
 	"github.com/vijay431/orkestra/internal/ticket"
+	"github.com/vijay431/orkestra/internal/web"
 )
 
 //go:embed 001_init.sql
@@ -58,6 +60,18 @@ func main() {
 
 	// Backup goroutine
 	go svc.RunBackupLoop(ctx, dbPath, cfg.BackupDir, cfg.BackupInterval, cfg.BackupKeep)
+
+	// Web UI server
+	if os.Getenv("WEB_ENABLED") != "false" {
+		webAddr := getenv("WEB_ADDR", "127.0.0.1:7777")
+		h := web.New(svc, cfg.ProjectID)
+		go func() {
+			if err := web.Start(ctx, webAddr, h); err != nil {
+				stdlog.Printf("web: server stopped: %v", err)
+			}
+		}()
+		stdlog.Printf("web: listening on http://%s", webAddr)
+	}
 
 	// MCP server
 	srv := orkmcp.NewServer(cfg, svc, log)
