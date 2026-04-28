@@ -38,7 +38,7 @@ func main() {
 	}
 	cfg.BackupInterval = getenvDuration("BACKUP_INTERVAL", time.Hour)
 
-	dbPath := getenv("DB_PATH", "/data/orkestra.db")
+	dbPath := getenv("DB_PATH", "orkestra.db")
 	db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(ON)&_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)")
 	if err != nil {
 		log.Error("failed to open database", "path", dbPath, "err", err)
