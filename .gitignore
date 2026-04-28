@@ -1,1 +1,17 @@
 .worktrees/
+
+# Local SQLite runtime DB + WAL/SHM sidecars
+*.db
+*.db-shm
+*.db-wal
+
+# Local backup snapshots (BACKUP_DIR default)
+backups/
+
+# Built binaries
+/orkestra
+/server
+
+# Editor / OS
+*.swp
+.DS_Store

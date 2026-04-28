@@ -2,15 +2,13 @@ name: CI
 
 on:
   push:
-  pull_request:
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: false
 
 jobs:
   test:
@@ -113,7 +111,7 @@ jobs:
 
   deploy:
     name: Deploy Docs to GitHub Pages
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main'
     needs: [test, e2e, security, docs]
     runs-on: ubuntu-latest
     timeout-minutes: 5
