@@ -12,6 +12,7 @@ COPY --from=builder /app/orkestra /orkestra
 COPY ORKESTRA_SKILL.md /ORKESTRA_SKILL.md
 VOLUME ["/data"]
 EXPOSE 8080
+EXPOSE 7777
 ENTRYPOINT ["/orkestra"]
 
 # Production target — minimal scratch image
@@ -21,4 +22,5 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY ORKESTRA_SKILL.md /ORKESTRA_SKILL.md
 VOLUME ["/data"]
 EXPOSE 8080
+EXPOSE 7777
 ENTRYPOINT ["/orkestra"]
