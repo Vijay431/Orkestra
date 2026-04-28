@@ -23,6 +23,12 @@ var staticFiles embed.FS
 func New(svc *ticket.Service, projectID string) http.Handler {
 	mux := http.NewServeMux()
 
+	vendorFS, err := fs.Sub(staticFiles, "static/vendor")
+	if err != nil {
+		panic("web: static/vendor not embedded: " + err.Error())
+	}
+	mux.Handle("GET /vendor/", http.StripPrefix("/vendor/", http.FileServerFS(vendorFS)))
+
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
@@ -84,7 +90,8 @@ func Start(ctx context.Context, addr string, h http.Handler) error {
 		Handler: h,
 	}
 
-	ln, err := net.Listen("tcp", addr)
+	lc := net.ListenConfig{}
+	ln, err := lc.Listen(ctx, "tcp", addr)
 	if err != nil {
 		return err
 	}

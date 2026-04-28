@@ -31,7 +31,7 @@ func newHandlerWithSvc(t *testing.T) (*ticket.Service, http.Handler) {
 
 func TestGetProject(t *testing.T) {
 	h := newHandler(t)
-	req := httptest.NewRequest("GET", "/api/project", nil)
+	req := httptest.NewRequestWithContext(context.Background(), "GET", "/api/project", nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 
@@ -53,7 +53,7 @@ func TestGetProject(t *testing.T) {
 
 func TestGetTicketsEmpty(t *testing.T) {
 	h := newHandler(t)
-	req := httptest.NewRequest("GET", "/api/tickets", nil)
+	req := httptest.NewRequestWithContext(context.Background(), "GET", "/api/tickets", nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 
@@ -84,7 +84,7 @@ func TestGetTicketsWithData(t *testing.T) {
 		t.Fatalf("create ticket 2: %v", err)
 	}
 
-	req := httptest.NewRequest("GET", "/api/tickets", nil)
+	req := httptest.NewRequestWithContext(context.Background(), "GET", "/api/tickets", nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 
@@ -110,7 +110,7 @@ func TestGetTicketByID(t *testing.T) {
 		t.Fatalf("create ticket: %v", err)
 	}
 
-	req := httptest.NewRequest("GET", "/api/tickets/"+tk.ID, nil)
+	req := httptest.NewRequestWithContext(context.Background(), "GET", "/api/tickets/"+tk.ID, nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 
@@ -132,7 +132,7 @@ func TestGetTicketByID(t *testing.T) {
 
 func TestGetTicketNotFound(t *testing.T) {
 	h := newHandler(t)
-	req := httptest.NewRequest("GET", "/api/tickets/nonexistent-999", nil)
+	req := httptest.NewRequestWithContext(context.Background(), "GET", "/api/tickets/nonexistent-999", nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 
@@ -151,7 +151,7 @@ func TestGetTicketNotFound(t *testing.T) {
 
 func TestGetIndex(t *testing.T) {
 	h := newHandler(t)
-	req := httptest.NewRequest("GET", "/", nil)
+	req := httptest.NewRequestWithContext(context.Background(), "GET", "/", nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 

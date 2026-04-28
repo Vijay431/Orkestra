@@ -125,6 +125,40 @@ describe('comments and links', () => {
     expect(out).toContain('lnk:[');
     expect(out).toContain('k:blk');
   });
+
+  it('escapes IDs with delimiters in links', () => {
+    const t = baseTicket();
+    t.links = [{ fromId: 'a:b', toId: 'c,d', linkType: 'rel' }];
+    const out = encode(t);
+    expect(out).toContain('f:"a:b"');
+    expect(out).toContain('t:"c,d"');
+  });
+
+  it('escapes parentId with delimiter', () => {
+    const t = baseTicket();
+    t.parentId = 'ep:01';
+    const out = encode(t);
+    expect(out).toContain('par:"ep:01"');
+  });
+
+  it('escapes children IDs with delimiters', () => {
+    const t = baseTicket();
+    t.children = ['a:1', 'b,2'];
+    const out = encode(t);
+    expect(out).toContain('ch:["a:1","b,2"]');
+  });
+});
+
+describe('encodeError escaping', () => {
+  it('escapes code containing delimiter', () => {
+    const out = encodeError('err:type', 'msg');
+    expect(out).toContain('code:"err:type"');
+  });
+
+  it('escapes msg as before', () => {
+    const out = encodeError('not_found', 'item: missing');
+    expect(out).toContain('msg:"item: missing"');
+  });
 });
 
 describe('summary mode', () => {

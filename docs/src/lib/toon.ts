@@ -54,7 +54,7 @@ export function encodeSummary(t: Ticket): string {
 }
 
 export function encodeError(code: string, msg: string): string {
-  return VERSION + `ERR{code:${code},msg:${escapeString(msg)}}`;
+  return VERSION + `ERR{code:${escapeString(code)},msg:${escapeString(msg)}}`;
 }
 
 export function encodeOK(): string {
@@ -90,8 +90,8 @@ function encodeTicket(t: Ticket, summary: boolean): string {
   if (t.labels && t.labels.length > 0) {
     parts.push(`lbl:[${t.labels.map(escapeString).join(',')}]`);
   }
-  if (t.parentId) parts.push(`par:${t.parentId}`);
-  if (t.children && t.children.length > 0) parts.push(`ch:[${t.children.join(',')}]`);
+  if (t.parentId) parts.push(`par:${escapeString(t.parentId)}`);
+  if (t.children && t.children.length > 0) parts.push(`ch:[${t.children.map(escapeString).join(',')}]`);
 
   if (!summary) {
     if (t.description) parts.push(`d:${escapeString(t.description)}`);
@@ -107,7 +107,7 @@ function encodeTicket(t: Ticket, summary: boolean): string {
     }
     if (t.links && t.links.length > 0) {
       const lnk = t.links
-        .map((l) => `L{f:${l.fromId},t:${l.toId},k:${l.linkType}}`)
+        .map((l) => `L{f:${escapeString(l.fromId)},t:${escapeString(l.toId)},k:${l.linkType}}`)
         .join(',');
       parts.push(`lnk:[${lnk}]`);
     }
@@ -262,6 +262,15 @@ function looksLikeTicket(v: unknown): v is Record<string, unknown> {
   return typeof o.id === 'string' && (typeof o.title === 'string' || typeof o.t === 'string');
 }
 
+function toFiniteNumber(v: unknown): number | undefined {
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  if (typeof v === 'string' && v.trim() !== '') {
+    const n = Number(v);
+    if (Number.isFinite(n)) return n;
+  }
+  return undefined;
+}
+
 function normalizeTicket(o: Record<string, unknown> | unknown): Ticket {
   const r = o as Record<string, unknown>;
   return {
@@ -273,7 +282,7 @@ function normalizeTicket(o: Record<string, unknown> | unknown): Ticket {
     execMode: (r.exec_mode ?? r.em) !== undefined
       ? aliasOr(EXEC_ALIAS, r.exec_mode ?? r.em, 'par')
       : undefined,
-    execOrder: (r.exec_order ?? r.ord) as number | undefined,
+    execOrder: toFiniteNumber(r.exec_order ?? r.ord),
     labels: toStringArray(r.labels ?? r.lbl),
     parentId: (r.parent_id ?? r.par) as string | undefined,
     children: toStringArray(r.children ?? r.ch),
@@ -293,7 +302,7 @@ function genericEncode(v: unknown): string {
   if (Array.isArray(v)) return `[${v.map(genericEncode).join(',')}]`;
   if (typeof v === 'object') {
     const entries = Object.entries(v as Record<string, unknown>).map(
-      ([k, val]) => `${k}:${genericEncode(val)}`,
+      ([k, val]) => `${escapeString(k)}:${genericEncode(val)}`,
     );
     return `{${entries.join(',')}}`;
   }
