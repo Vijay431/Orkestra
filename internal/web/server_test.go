@@ -159,3 +159,50 @@ func TestGetIndex(t *testing.T) {
 		t.Fatalf("status = %d, want 200", rec.Code)
 	}
 }
+
+func TestGetIndexHTMLContent(t *testing.T) {
+	h := newHandler(t)
+	req := httptest.NewRequestWithContext(context.Background(), "GET", "/", nil)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
+
+	body := rec.Body.String()
+
+	// Task 1 a11y markers
+	for _, want := range []string{
+		`role="dialog"`,
+		`--color-focus-ring`,
+		`aria-live="polite"`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("response body missing %q", want)
+		}
+	}
+
+	// P1 skip-link target
+	if !strings.Contains(body, `id="board"`) {
+		t.Errorf("response body missing id=\"board\"")
+	}
+
+	// P2 toast role
+	if !strings.Contains(body, `role="alert"`) {
+		t.Errorf("response body missing role=\"alert\"")
+	}
+
+	// P4 security headers
+	securityHeaders := map[string]string{
+		"Content-Security-Policy": "default-src 'self'",
+		"X-Content-Type-Options":  "nosniff",
+		"Referrer-Policy":         "same-origin",
+	}
+	for header, wantContains := range securityHeaders {
+		got := rec.Header().Get(header)
+		if !strings.Contains(got, wantContains) {
+			t.Errorf("header %q = %q, want it to contain %q", header, got, wantContains)
+		}
+	}
+}
