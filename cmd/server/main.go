@@ -33,7 +33,7 @@ func main() {
 		Port:      getenv("PORT", "8080"),
 		BindAddr:  getenv("BIND_ADDR", "0.0.0.0"),
 		MCPToken:  os.Getenv("MCP_TOKEN"),
-		BackupDir: getenv("BACKUP_DIR", "/data/backups"),
+		BackupDir: getenv("BACKUP_DIR", "backups"),
 		BackupKeep: getenvInt("BACKUP_KEEP", 24),
 	}
 	cfg.BackupInterval = getenvDuration("BACKUP_INTERVAL", time.Hour)
