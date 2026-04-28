@@ -47,7 +47,7 @@ export default function LifecycleVisualizer() {
 
   return (
     <div className="ork-lifecycle">
-      <svg viewBox="0 0 600 320" className="ork-lifecycle__svg" role="img" aria-label="Ticket lifecycle">
+      <svg viewBox="0 0 600 320" className="ork-lifecycle__svg" role="group" aria-label="Ticket lifecycle">
         <defs>
           <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M 0 0 L 10 5 L 0 10 z" fill="#3a4a60" />

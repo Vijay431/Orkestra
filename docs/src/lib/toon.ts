@@ -50,7 +50,7 @@ export function encode(t: Ticket): string {
 }
 
 export function encodeSummary(t: Ticket): string {
-  return encodeTicket(t, true);
+  return VERSION + encodeTicket(t, true);
 }
 
 export function encodeError(code: string, msg: string): string {
@@ -229,6 +229,33 @@ function aliasOr<T extends string>(map: Record<string, T>, v: unknown, fallback:
   return map[v.toLowerCase()] ?? fallback;
 }
 
+function toStringArray(v: unknown): string[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  return v.map((x) => String(x));
+}
+
+function toComments(v: unknown): Comment[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  return v
+    .filter((x): x is Record<string, unknown> => !!x && typeof x === 'object')
+    .map((c) => ({
+      author: String(c.author ?? ''),
+      body: String(c.body ?? c.t ?? ''),
+      createdAt: String(c.created_at ?? c.createdAt ?? c.timestamp ?? c.ts ?? new Date().toISOString()),
+    }));
+}
+
+function toLinks(v: unknown): Link[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  return v
+    .filter((x): x is Record<string, unknown> => !!x && typeof x === 'object')
+    .map((l) => ({
+      fromId: String(l.from_id ?? l.fromId ?? l.f ?? ''),
+      toId: String(l.to_id ?? l.toId ?? l.t ?? ''),
+      linkType: aliasOr({ blk: 'blk', rel: 'rel', dup: 'dup' } as const, l.link_type ?? l.linkType ?? l.k, 'rel'),
+    }));
+}
+
 function looksLikeTicket(v: unknown): v is Record<string, unknown> {
   if (!v || typeof v !== 'object') return false;
   const o = v as Record<string, unknown>;
@@ -247,11 +274,13 @@ function normalizeTicket(o: Record<string, unknown> | unknown): Ticket {
       ? aliasOr(EXEC_ALIAS, r.exec_mode ?? r.em, 'par')
       : undefined,
     execOrder: (r.exec_order ?? r.ord) as number | undefined,
-    labels: (r.labels ?? r.lbl) as string[] | undefined,
+    labels: toStringArray(r.labels ?? r.lbl),
     parentId: (r.parent_id ?? r.par) as string | undefined,
-    children: (r.children ?? r.ch) as string[] | undefined,
+    children: toStringArray(r.children ?? r.ch),
     description: (r.description ?? r.d) as string | undefined,
     assignee: (r.assignee ?? r.as) as string | undefined,
+    comments: toComments(r.comments ?? r.cmt),
+    links: toLinks(r.links ?? r.lnk),
     createdAt: (r.created_at ?? r.ca ?? new Date().toISOString()) as string,
     updatedAt: (r.updated_at ?? r.ua ?? new Date().toISOString()) as string,
   };
