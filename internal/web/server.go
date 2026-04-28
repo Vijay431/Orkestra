@@ -11,6 +11,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/vijay431/orkestra/internal/ticket"
 )
@@ -22,7 +23,6 @@ var staticFiles embed.FS
 func New(svc *ticket.Service, projectID string) http.Handler {
 	mux := http.NewServeMux()
 
-	// Serve index.html at /
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
@@ -34,32 +34,30 @@ func New(svc *ticket.Service, projectID string) http.Handler {
 			return
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Write(data) //nolint:errcheck
+		_, _ = w.Write(data) // error unactionable; response header already sent
 	})
 
-	// GET /api/project — project metadata
 	mux.HandleFunc("GET /api/project", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"project_id": projectID})
 	})
 
-	// GET /api/tickets — list all non-archived tickets
 	mux.HandleFunc("GET /api/tickets", func(w http.ResponseWriter, r *http.Request) {
 		tickets, err := svc.List(r.Context(), ticket.ListFilter{
 			IncludeArchived: false,
 			Limit:           500,
 		})
 		if err != nil {
-			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			log.Printf("web: handler error: %v", err)
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "internal_error"})
 			return
 		}
-		// Return [] not null for empty slice
+		// json.Encoder renders nil slices as null; use empty slice to return [] instead
 		if tickets == nil {
 			tickets = []ticket.Ticket{}
 		}
 		writeJSON(w, http.StatusOK, tickets)
 	})
 
-	// GET /api/tickets/{id} — single ticket with relations
 	mux.HandleFunc("GET /api/tickets/{id}", func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		t, err := svc.Get(r.Context(), id)
@@ -68,7 +66,8 @@ func New(svc *ticket.Service, projectID string) http.Handler {
 				writeJSON(w, http.StatusNotFound, map[string]string{"error": "not_found"})
 				return
 			}
-			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			log.Printf("web: handler error: %v", err)
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "internal_error"})
 			return
 		}
 		writeJSON(w, http.StatusOK, t)
@@ -101,8 +100,10 @@ func Start(ctx context.Context, addr string, h http.Handler) error {
 
 	select {
 	case <-ctx.Done():
-		if err := srv.Shutdown(context.Background()); err != nil {
-			log.Printf("web server shutdown error: %v", err)
+		shutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(shutCtx); err != nil {
+			log.Printf("web: shutdown error: %v", err)
 		}
 		return <-errCh
 	case err := <-errCh:
