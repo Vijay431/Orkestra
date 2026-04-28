@@ -7,15 +7,15 @@ const lines = [
 ];
 ---
 
-<div class="ork-term" role="img" aria-label="Terminal showing Orkestra startup">
-  <div class="ork-term__chrome">
+<div class="ork-term" role="region" aria-label="Terminal showing Orkestra startup">
+  <div class="ork-term__chrome" aria-hidden="true">
     <span></span><span></span><span></span>
     <em>orkestra ~ self-hosted</em>
   </div>
   <pre class="ork-term__body">
 {lines.map((l, i) => (
   <div class="ork-term__line" style={`--d:${l.delay}s`}>
-    <span class="ork-term__prompt" data-kind={l.prompt === '$' ? 'cmd' : 'log'}>{l.prompt}</span>
+    <span class="ork-term__prompt" data-kind={l.prompt === '$' ? 'cmd' : 'log'} aria-hidden="true">{l.prompt}</span>
     <span class="ork-term__text">{l.text}</span>
     {i === lines.length - 1 && <span class="ork-term__cursor" aria-hidden="true">▍</span>}
   </div>

@@ -22,7 +22,7 @@
 }
 .ork-lifecycle__node:hover { transform: translate(0, -2px); }
 .ork-lifecycle__node[data-active='true'] circle:first-child {
-  filter: drop-shadow(0 0 12px currentColor);
+  filter: drop-shadow(0 0 12px currentcolor);
 }
 .ork-lifecycle__detail {
   background: var(--ork-bg);

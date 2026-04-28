@@ -23,7 +23,7 @@ interface Tool {
 const TOOLS = toolsData as Tool[];
 
 const CATEGORIES: Array<{ id: 'all' | Tool['category']; label: string; tint: string }> = [
-  { id: 'all', label: 'All 13', tint: 'var(--ork-text-dim)' },
+  { id: 'all', label: `All ${TOOLS.length}`, tint: 'var(--ork-text-dim)' },
   { id: 'lifecycle', label: 'Lifecycle', tint: 'var(--ork-teal)' },
   { id: 'discovery', label: 'Discovery', tint: 'var(--ork-green)' },
   { id: 'collaboration', label: 'Collaboration', tint: 'var(--ork-pink)' },
@@ -50,12 +50,12 @@ export default function ToolExplorer() {
   return (
     <div className="ork-explorer">
       <div className="ork-explorer__controls">
-        <div className="ork-explorer__chips" role="tablist" aria-label="Tool category">
+        <div className="ork-explorer__chips" role="group" aria-label="Filter by tool category">
           {CATEGORIES.map((c) => (
             <button
               key={c.id}
-              role="tab"
-              aria-selected={filter === c.id}
+              type="button"
+              aria-pressed={filter === c.id}
               className="ork-explorer__chip"
               data-active={filter === c.id}
               style={{ ['--chip-tint' as string]: c.tint }}

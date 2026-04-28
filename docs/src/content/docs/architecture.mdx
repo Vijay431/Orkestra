@@ -92,7 +92,7 @@ Every query carries `AND project_id = ?`. Run multiple Orkestra instances on dif
 flowchart LR
     A[Write] -->|WAL journal| B[(orkestra.db)]
     B -.->|every BACKUP_INTERVAL| C[VACUUM INTO]
-    C --> D[/data/backups/orkestra-ts.db]
+    C --> D[/data/backups/orkestra-{timestamp}.db]
     D -->|keep last BACKUP_KEEP| E[old backups deleted]
 ```
 

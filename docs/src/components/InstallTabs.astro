@@ -45,6 +45,7 @@ curl http://localhost:8080/health`,
         id={`ork-tab-${t.id}`}
         aria-controls={`ork-panel-${t.id}`}
         aria-selected={i === 0}
+        tabindex={i === 0 ? 0 : -1}
         data-target={t.id}
       >
         {t.label}
@@ -71,16 +72,33 @@ curl http://localhost:8080/health`,
   document.addEventListener('astro:page-load', () => {
     const root = document.querySelector('.ork-install');
     if (!root) return;
-    const tabs = root.querySelectorAll('.ork-install__tab');
+    const tabs = Array.from(root.querySelectorAll('.ork-install__tab'));
     const panels = root.querySelectorAll('.ork-install__panel');
+    const activate = (tab) => {
+      const target = tab.getAttribute('data-target');
+      tabs.forEach((t) => {
+        const sel = t === tab;
+        t.setAttribute('aria-selected', String(sel));
+        t.setAttribute('tabindex', sel ? '0' : '-1');
+      });
+      panels.forEach((p) => {
+        if (p.getAttribute('data-id') === target) p.removeAttribute('hidden');
+        else p.setAttribute('hidden', '');
+      });
+    };
     tabs.forEach((tab) =>
-      tab.addEventListener('click', () => {
-        const target = tab.getAttribute('data-target');
-        tabs.forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
-        panels.forEach((p) => {
-          if (p.getAttribute('data-id') === target) p.removeAttribute('hidden');
-          else p.setAttribute('hidden', '');
-        });
+      tab.addEventListener('click', () => activate(tab)),
+    );
+    tabs.forEach((tab, i) =>
+      tab.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+        e.preventDefault();
+        const next =
+          e.key === 'Home' ? 0 :
+          e.key === 'End' ? tabs.length - 1 :
+          (i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        tabs[next].focus();
+        activate(tabs[next]);
       }),
     );
   });

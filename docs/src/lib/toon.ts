@@ -72,7 +72,9 @@ export function encodeBoard(board: Partial<Record<Status, Ticket[]>>): string {
 }
 
 export function etagOf(t: Ticket): string {
-  return formatRFC3339Nano(toDate(t.updatedAt));
+  // JS Date truncates to ms; pass strings through verbatim to preserve Go's ns precision.
+  if (typeof t.updatedAt === 'string') return t.updatedAt;
+  return formatRFC3339Nano(t.updatedAt);
 }
 
 function encodeTicket(t: Ticket, summary: boolean): string {
@@ -196,6 +198,37 @@ export function encodeAny(value: unknown): string {
   return VERSION + genericEncode(value);
 }
 
+const STATUS_ALIAS: Record<string, Status> = {
+  bk: 'bk', backlog: 'bk',
+  td: 'td', todo: 'td',
+  ip: 'ip', in_progress: 'ip', 'in-progress': 'ip', inprogress: 'ip',
+  dn: 'dn', done: 'dn',
+  bl: 'bl', blocked: 'bl',
+  cl: 'cl', cancelled: 'cl', canceled: 'cl',
+};
+const PRIORITY_ALIAS: Record<string, Priority> = {
+  cr: 'cr', critical: 'cr',
+  h: 'h', high: 'h',
+  m: 'm', medium: 'm', med: 'm',
+  l: 'l', low: 'l',
+};
+const TYPE_ALIAS: Record<string, TicketType> = {
+  bug: 'bug',
+  ft: 'ft', feature: 'ft',
+  tsk: 'tsk', task: 'tsk',
+  ep: 'ep', epic: 'ep',
+  chr: 'chr', chore: 'chr',
+};
+const EXEC_ALIAS: Record<string, ExecMode> = {
+  par: 'par', parallel: 'par',
+  seq: 'seq', sequential: 'seq',
+};
+
+function aliasOr<T extends string>(map: Record<string, T>, v: unknown, fallback: T): T {
+  if (typeof v !== 'string') return fallback;
+  return map[v.toLowerCase()] ?? fallback;
+}
+
 function looksLikeTicket(v: unknown): v is Record<string, unknown> {
   if (!v || typeof v !== 'object') return false;
   const o = v as Record<string, unknown>;
@@ -207,10 +240,12 @@ function normalizeTicket(o: Record<string, unknown> | unknown): Ticket {
   return {
     id: String(r.id ?? ''),
     title: String(r.title ?? r.t ?? ''),
-    status: (r.status ?? r.s ?? 'bk') as Status,
-    priority: (r.priority ?? r.p ?? 'm') as Priority,
-    type: (r.type ?? r.typ ?? 'tsk') as TicketType,
-    execMode: (r.exec_mode ?? r.em) as ExecMode | undefined,
+    status: aliasOr(STATUS_ALIAS, r.status ?? r.s, 'bk'),
+    priority: aliasOr(PRIORITY_ALIAS, r.priority ?? r.p, 'm'),
+    type: aliasOr(TYPE_ALIAS, r.type ?? r.typ, 'tsk'),
+    execMode: (r.exec_mode ?? r.em) !== undefined
+      ? aliasOr(EXEC_ALIAS, r.exec_mode ?? r.em, 'par')
+      : undefined,
     execOrder: (r.exec_order ?? r.ord) as number | undefined,
     labels: (r.labels ?? r.lbl) as string[] | undefined,
     parentId: (r.parent_id ?? r.par) as string | undefined,

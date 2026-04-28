@@ -85,7 +85,12 @@ export default function LifecycleVisualizer() {
             onClick={() => setActive(s.id)}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActive(s.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setActive(s.id);
+              }
+            }}
           >
             <circle r="28" fill={s.color} fillOpacity={active === s.id ? 1 : 0.15} stroke={s.color} strokeWidth="2" />
             <text textAnchor="middle" y="6" fontFamily="JetBrains Mono, monospace" fontSize="14" fontWeight="600" fill={active === s.id ? '#0B0F14' : '#E6EDF3'}>
