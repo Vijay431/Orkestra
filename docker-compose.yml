@@ -16,7 +16,7 @@ services:
       - BACKUP_DIR=/data/backups
       - BACKUP_INTERVAL=${BACKUP_INTERVAL:-1h}
       - BACKUP_KEEP=${BACKUP_KEEP:-24}
-      # - WEB_ADDR=0.0.0.0:7777  # uncomment to expose on all interfaces
+      - WEB_ADDR=0.0.0.0:7777  # bind all interfaces inside container (required for port mapping)
       # - WEB_ENABLED=false       # uncomment to disable the web UI
     deploy:
       resources:
