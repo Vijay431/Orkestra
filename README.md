@@ -1,7 +1,7 @@
 # Orkestra
 
 [![CI](https://github.com/Vijay431/Orkestra/actions/workflows/ci.yml/badge.svg)](https://github.com/Vijay431/Orkestra/actions/workflows/ci.yml)
-[![Go Reference](https://pkg.go.dev/badge/github.com/vijay431/orkestra.svg)](https://pkg.go.dev/github.com/vijay431/orkestra)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Vijay431/orkestra.svg)](https://pkg.go.dev/github.com/Vijay431/orkestra)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8.svg)](https://go.dev)
 
@@ -21,7 +21,7 @@ Solves the three LinearMCP pain points:
 
 ## 📑 Contents
 
-- [🚀 Quick Start](#-quick-start)
+- [🚀 Quick Start](#quick-start)
 - [💻 Local Development](#local-development)
 - [📦 TOON Format](#toon-format)
 - [🛠️ MCP Tools Reference](#mcp-tools-reference)
@@ -42,7 +42,7 @@ Solves the three LinearMCP pain points:
 
 ```bash
 # 1. Clone and onboard (auto-detects Claude Code, Cursor, Copilot, Windsurf, Zed)
-git clone https://github.com/vijay431/orkestra
+git clone https://github.com/Vijay431/orkestra
 PROJECT_ID=myapp ./install.sh
 
 # 2. Verify
@@ -105,7 +105,7 @@ sqlite3 /tmp/dev.db "SELECT id, title, status, priority FROM tickets WHERE archi
 
 All tool responses use TOON (Tokens Object Oriented Notation) — a compact typed shorthand that cuts average ticket representation from ~400 tokens (JSON) to ~120 tokens.
 
-```
+```toon
 TOON/1 T{id:myapp-001,t:"Fix auth bug",s:ip,p:h,typ:bug,lbl:[auth,sec],ca:2024-01-15,ua:2024-01-15T10:00:00Z}
 ```
 
@@ -137,7 +137,7 @@ TOON/1 T{id:myapp-001,t:"Fix auth bug",s:ip,p:h,typ:bug,lbl:[auth,sec],ca:2024-0
 
 **Error envelopes:**
 
-```
+```toon
 TOON/1 ERR{code:not_found,msg:"myapp-999 does not exist"}
 TOON/1 ERR{code:conflict,msg:"myapp-002 already claimed"}
 TOON/1 ERR{code:seq_blocked,msg:"myapp-022 blocked: ord=1 not done"}
@@ -182,7 +182,7 @@ TOON/1 ERR{code:invalid,msg:"exec_order must be unique within parent"}
 
 ### Core loop
 
-```
+```toon
 ticket_backlog          → pick highest-priority item
 ticket_claim id=X       → atomically move to ip (save ua as etag)
 (do the work)
@@ -191,7 +191,7 @@ ticket_update id=X s=dn etag=<ua>  → mark done
 
 ### Epic with parallel swarm
 
-```
+```toon
 ticket_create typ=ep t="Auth system"
 ticket_create parent_id=<epic> t="JWT middleware"   # exec_mode=par by default
 ticket_create parent_id=<epic> t="OAuth provider"
@@ -202,7 +202,7 @@ ticket_diagram id=<epic>  → Mermaid flowchart
 
 ### Sequential pipeline
 
-```
+```toon
 ticket_create typ=tsk t="Deploy pipeline" em=seq
 ticket_create parent_id=<pipeline> t="Run tests"        em=seq ord=1
 ticket_create parent_id=<pipeline> t="Build image"      em=seq ord=2
@@ -212,7 +212,7 @@ ticket_create parent_id=<pipeline> t="Push to registry" em=seq ord=3
 
 ### Etag optimistic locking
 
-```
+```toon
 ticket_get id=myapp-001       → ...ua:2024-01-15T10:05:22.123456789Z...
 ticket_update id=myapp-001 etag=2024-01-15T10:05:22.123456789Z s=dn
 # If another agent updated first → ERR{code:conflict} → re-read and retry
@@ -222,7 +222,7 @@ ticket_update id=myapp-001 etag=2024-01-15T10:05:22.123456789Z s=dn
 
 Multiple agents working from the same backlog compete safely via atomic claim:
 
-```
+```toon
 # Agent A                           # Agent B
 ticket_backlog                      ticket_backlog
 → [myapp-003, myapp-004, ...]       → [myapp-003, myapp-004, ...]
@@ -237,7 +237,7 @@ ticket_claim id=myapp-003           ticket_claim id=myapp-003
 
 ## 🗄️ Architecture
 
-```
+```text
 HTTP request
     │
     ▼

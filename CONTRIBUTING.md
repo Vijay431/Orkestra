@@ -64,7 +64,7 @@ Before opening a PR, confirm:
 
 Use [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
+```text
 feat: add ticket_reopen tool
 fix: correct etag comparison on concurrent update
 docs: update status codes in SKILL.md
