@@ -5,7 +5,15 @@ description: From zero to a running Orkestra MCP server, talking to your LLM age
 
 From zero to a running MCP server, talking to your LLM agent, in under a minute.
 
-## The 30-second path
+## Step 1 — Install Orkestra and the agent skill
+
+**Option A (recommended): one-line remote install — no clone required**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Vijay431/Orkestra/main/install.sh | PROJECT_ID=myapp bash
+```
+
+**Option B: clone and install locally**
 
 ```bash
 git clone https://github.com/Vijay431/Orkestra
@@ -13,27 +21,16 @@ cd Orkestra
 PROJECT_ID=myapp ./install.sh
 ```
 
-That's it. The installer:
+Either path does the same thing:
 
-1. Builds the Docker image
-2. Starts the server on `:8080`
-3. Detects your IDE and adds the MCP server config
-4. Verifies the connection with a `/health` ping
+1. Clones (or updates) the repo to `~/.orkestra`
+2. Builds the Docker image and starts the server on `:8080`
+3. Detects your IDE and registers the MCP server config
+4. Installs the operator skill to `~/.agents/skills/orkestra/`
 
-## Verify
+The installer is idempotent — re-running it updates config in place.
 
-```bash
-curl http://localhost:8080/health
-# → {"status":"ok","project":"myapp","db_ok":true,...}
-```
-
-If your agent is Claude Code, ask it:
-
-> *"Use ticket_backlog to show me my work queue"*
-
-You should see `TOON/1 [...]` come back — possibly empty if you haven't created any tickets yet.
-
-## What gets auto-configured
+### What gets auto-configured
 
 ```mermaid
 flowchart TD
@@ -52,17 +49,30 @@ flowchart TD
     H --> I
 ```
 
-The installer is idempotent — re-running it updates the config in place.
+## Step 2 — Run the server
 
-## Local development (no Docker)
+`install.sh` already started a Docker container. If you need to start it yourself:
 
-You only need Go 1.22+:
+**Docker:**
 
 ```bash
-PROJECT_ID=dev DB_PATH=/tmp/dev.db go run ./cmd/server
+PROJECT_ID=myapp docker compose up -d
 ```
 
-The server starts on `:8080` and creates the SQLite file at `/tmp/dev.db`.
+**Manual / no Docker** (Go 1.22+ required — useful for working on Orkestra itself):
+
+```bash
+PROJECT_ID=myapp DB_PATH=/tmp/dev.db go run ./cmd/server
+```
+
+## Step 3 — Verify
+
+```bash
+curl http://localhost:8080/health
+# → {"status":"ok","project":"myapp","db_ok":true,...}
+```
+
+Then, in your AI tool, ask: *"Use ticket_backlog to show me my work queue."* You should see `TOON/1 [...]` come back — empty until you create tickets.
 
 ## Environment variables
 
