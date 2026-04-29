@@ -81,58 +81,61 @@ export default function ToolExplorer() {
             <button
               className="ork-explorer__card-header"
               aria-expanded={openName === t.name}
+              aria-controls={`tool-detail-${t.name}`}
               onClick={() => setOpenName(openName === t.name ? null : t.name)}
             >
               <code className="ork-explorer__name">{t.name}</code>
               <span className="ork-explorer__category">{t.category}</span>
             </button>
             <p className="ork-explorer__summary">{t.summary}</p>
-            {openName === t.name && (
-              <div className="ork-explorer__detail">
-                <h4>Parameters</h4>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Type</th>
-                      <th>Default</th>
-                      <th>Notes</th>
+            <div
+              className="ork-explorer__detail"
+              id={`tool-detail-${t.name}`}
+              hidden={openName !== t.name}
+            >
+              <h4>Parameters</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {t.params.map((p) => (
+                    <tr key={p.name}>
+                      <td>
+                        <code>{p.name}</code>
+                        {p.required && <span className="ork-explorer__req"> *</span>}
+                      </td>
+                      <td>{p.type}</td>
+                      <td>{p.default ?? '—'}</td>
+                      <td>{p.notes ?? ''}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {t.params.map((p) => (
-                      <tr key={p.name}>
-                        <td>
-                          <code>{p.name}</code>
-                          {p.required && <span className="ork-explorer__req"> *</span>}
-                        </td>
-                        <td>{p.type}</td>
-                        <td>{p.default ?? '—'}</td>
-                        <td>{p.notes ?? ''}</td>
-                      </tr>
+                  ))}
+                </tbody>
+              </table>
+              <h4>Returns</h4>
+              <code className="ork-explorer__returns">{t.returns}</code>
+              {t.errors && t.errors.length > 0 && (
+                <>
+                  <h4>Errors</h4>
+                  <div className="ork-explorer__errors">
+                    {t.errors.map((e) => (
+                      <code key={e}>{e}</code>
                     ))}
-                  </tbody>
-                </table>
-                <h4>Returns</h4>
-                <code className="ork-explorer__returns">{t.returns}</code>
-                {t.errors && t.errors.length > 0 && (
-                  <>
-                    <h4>Errors</h4>
-                    <div className="ork-explorer__errors">
-                      {t.errors.map((e) => (
-                        <code key={e}>{e}</code>
-                      ))}
-                    </div>
-                  </>
-                )}
-                {t.example && (
-                  <>
-                    <h4>Example</h4>
-                    <pre className="ork-explorer__example">{t.example}</pre>
-                  </>
-                )}
-              </div>
-            )}
+                  </div>
+                </>
+              )}
+              {t.example && (
+                <>
+                  <h4>Example</h4>
+                  <pre className="ork-explorer__example">{t.example}</pre>
+                </>
+              )}
+            </div>
           </li>
         ))}
       </ul>

@@ -4,11 +4,11 @@
   gap: 0;
   background: var(--ork-surface);
   border: 1px solid var(--ork-border);
-  border-radius: 14px;
+  border-radius: var(--ork-radius-lg);
   overflow: hidden;
   font-family: var(--sl-font-mono);
 }
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .ork-playground { grid-template-columns: 1fr; }
 }
 .ork-playground__pane {
@@ -53,10 +53,6 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.ork-playground__editor:focus-visible {
-  outline: 2px solid var(--ork-teal);
-  outline-offset: -2px;
-}
 .ork-playground__output {
   color: var(--ork-green);
   overflow: auto;
@@ -73,7 +69,7 @@
   justify-content: center;
   align-items: center;
 }
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .ork-playground__divider {
     width: auto;
     height: 1px;
@@ -84,7 +80,7 @@
   position: absolute;
   background: var(--ork-bg);
   border: 1px solid var(--ork-border);
-  border-radius: 999px;
+  border-radius: var(--ork-radius-pill);
   padding: 0.35rem 0.75rem;
   font-family: var(--sl-font-mono);
   font-size: 0.85rem;

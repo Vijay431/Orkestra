@@ -37,7 +37,7 @@ curl http://localhost:8080/health`,
     <p>Pick your setup. They all land at the same place: a local MCP endpoint your agent talks to.</p>
   </header>
 
-  <div class="ork-install__tabs" role="tablist">
+  <div class="ork-install__tabs" role="tablist" aria-orientation="horizontal">
     {tabs.map((t, i) => (
       <button
         class="ork-install__tab"
@@ -124,13 +124,16 @@ curl http://localhost:8080/health`,
   .ork-install__tab {
     background: var(--ork-surface);
     border: 1px solid var(--ork-border);
-    border-radius: 8px;
+    border-radius: var(--ork-radius-sm);
     color: var(--ork-text-dim);
     padding: 0.45rem 0.9rem;
     font: inherit;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: color var(--ork-dur-fast) var(--ork-ease-standard),
+                background var(--ork-dur-fast) var(--ork-ease-standard),
+                transform var(--ork-dur-fast) var(--ork-ease-standard),
+                border-color var(--ork-dur-fast) var(--ork-ease-standard);
   }
   .ork-install__tab:hover {
     color: var(--ork-text);
@@ -144,7 +147,7 @@ curl http://localhost:8080/health`,
   .ork-install__panel {
     background: var(--ork-surface);
     border: 1px solid var(--ork-border);
-    border-radius: 12px;
+    border-radius: var(--ork-radius-md);
     padding: 1.25rem 1.5rem;
   }
   .ork-install__panel pre {

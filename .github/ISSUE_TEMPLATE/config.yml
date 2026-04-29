@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Vijay431/Orkestra/security/advisories/new
+    about: Please report security issues via GitHub Security Advisories, not public issues.
+  - name: Documentation
+    url: https://vijay431.github.io/Orkestra
+    about: Check the docs site before opening an issue.

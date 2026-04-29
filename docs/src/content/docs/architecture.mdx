@@ -24,6 +24,10 @@ flowchart TD
     B -->|HTTP 200| A
 ```
 
+<noscript>
+  <p><em>This diagram requires JavaScript to render. See the prose description above for the same information.</em></p>
+</noscript>
+
 One round trip. No microservices, no message queues, no external state.
 
 ## Package map
@@ -95,6 +99,10 @@ flowchart LR
     C --> D[/data/backups/orkestra-{timestamp}.db]
     D -->|keep last BACKUP_KEEP| E[old backups deleted]
 ```
+
+<noscript>
+  <p><em>This diagram requires JavaScript to render. See the prose description above for the same information.</em></p>
+</noscript>
 
 Three layers:
 

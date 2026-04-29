@@ -22,6 +22,10 @@ flowchart LR
     E -->|ok| A
 ```
 
+<noscript>
+  <p><em>This diagram requires JavaScript to render. See the prose description above for the same information.</em></p>
+</noscript>
+
 Three tools. That's the agent loop. The other 10 are for orchestration.
 
 ```
@@ -46,6 +50,10 @@ flowchart TD
     C -.->|claimed by| W3[Agent 3]
 ```
 
+<noscript>
+  <p><em>This diagram requires JavaScript to render. See the prose description above for the same information.</em></p>
+</noscript>
+
 ```
 ticket_create typ=ep t="Auth system"
 ticket_create parent_id=<epic> t="JWT middleware"
@@ -65,6 +73,10 @@ flowchart LR
     S1 -->|must be dn first| S2[Build image<br/>ord=2]
     S2 -->|must be dn first| S3[Push to registry<br/>ord=3]
 ```
+
+<noscript>
+  <p><em>This diagram requires JavaScript to render. See the prose description above for the same information.</em></p>
+</noscript>
 
 ```
 ticket_create typ=tsk t="Deploy pipeline" em=seq
@@ -103,6 +115,10 @@ sequenceDiagram
     B->>O: ticket_update id=myapp-001 etag=T2 s=bl
     O->>B: T{...,ua:T3}
 ```
+
+<noscript>
+  <p><em>This diagram requires JavaScript to render. See the prose description above for the same information.</em></p>
+</noscript>
 
 The etag is just `ua` (updated_at). Always send the freshest one you have. Stale = `ERR{code:conflict}` = re-read, decide, retry.
 

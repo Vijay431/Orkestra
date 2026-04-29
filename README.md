@@ -5,6 +5,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8.svg)](https://go.dev)
 
+📖 **[Full documentation →](https://vijay431.github.io/Orkestra)**
+
 Self-hosted MCP ticket server for autonomous LLM agents. No cloud, no rate limits, no per-request costs. All data stays in a local SQLite file inside a ~20 MB Docker image.
 
 Orkestra also includes a read-only Kanban board accessible at `http://127.0.0.1:7777` when running locally. The board gives a live overview of all tickets grouped by status — useful for monitoring agent progress without invoking an MCP tool. It is served by an embedded HTTP server and can be disabled or rebound via the `WEB_ENABLED` / `WEB_ADDR` environment variables.
@@ -21,7 +23,7 @@ Solves the three LinearMCP pain points:
 
 ## 📑 Contents
 
-- [🚀 Quick Start](#-quick-start)
+- [🚀 Quick Start](#quick-start)
 - [💻 Local Development](#local-development)
 - [📦 TOON Format](#toon-format)
 - [🛠️ MCP Tools Reference](#mcp-tools-reference)
@@ -42,7 +44,7 @@ Solves the three LinearMCP pain points:
 
 ```bash
 # 1. Clone and onboard (auto-detects Claude Code, Cursor, Copilot, Windsurf, Zed)
-git clone https://github.com/vijay431/orkestra
+git clone https://github.com/Vijay431/orkestra
 PROJECT_ID=myapp ./install.sh
 
 # 2. Verify
@@ -59,6 +61,8 @@ PROJECT_ID=myapp docker compose up -d
 claude mcp add orkestra-myapp --transport http http://localhost:8080/sse
 ```
 
+[↑ Back to top](#orkestra)
+
 ---
 
 ## 💻 Local Development
@@ -73,21 +77,33 @@ PROJECT_ID=dev DB_PATH=/tmp/dev.db go run ./cmd/server
 curl http://localhost:8080/health
 ```
 
-**All environment variables with their defaults:**
+<details>
+<summary><strong>All environment variables with defaults</strong></summary>
 
 | Env var           | Default             | Description                                              |
 | ----------------- | ------------------- | -------------------------------------------------------- |
 | `PROJECT_ID`      | **(required)**      | Ticket ID prefix (`myapp`) and scope filter              |
-| `DB_PATH`         | `/data/orkestra.db` | SQLite file path                                         |
+| `DB_PATH`         | `orkestra.db`       | SQLite file path                                         |
 | `PORT`            | `8080`              | HTTP listen port                                         |
 | `BIND_ADDR`       | `0.0.0.0`           | Listen address (use `127.0.0.1` to bind localhost only)  |
 | `MCP_TOKEN`       | _(unset)_           | Bearer token for `/sse` and `/message` (optional)        |
 | `LOG_LEVEL`       | `info`              | `debug` \| `info` \| `warn` \| `error`                   |
-| `BACKUP_DIR`      | `/data/backups`     | Backup destination directory                             |
+| `BACKUP_DIR`      | `backups/`          | Backup destination directory                             |
 | `BACKUP_INTERVAL` | `1h`                | Backup frequency (Go duration string)                    |
 | `BACKUP_KEEP`     | `24`                | Number of backup files to retain                         |
 | `WEB_ENABLED`     | `true`              | Set to `false` to disable the web UI                     |
 | `WEB_ADDR`        | `127.0.0.1:7777`    | Bind address for the web UI (localhost-only by default)  |
+
+> [!TIP]
+> Set `MCP_TOKEN` to a random secret (e.g. `openssl rand -hex 32`) whenever Orkestra is reachable by more than one user or process. Without it, anyone who can reach the port can read and modify all tickets.
+
+> [!NOTE]
+> `BACKUP_DIR` defaults to `backups/` (relative to the working directory) for local runs. In Docker the named volume mounts at `/data`, so set `BACKUP_DIR=/data/backups` in your compose file.
+
+> [!IMPORTANT]
+> `BIND_ADDR` defaults to `0.0.0.0`, which exposes the MCP port on all network interfaces. In production or shared environments, set `BIND_ADDR=127.0.0.1` to restrict access to localhost only.
+
+</details>
 
 **Browsing the database:**
 
@@ -99,13 +115,15 @@ sqlite3 /tmp/dev.db "SELECT id, title, status, priority FROM tickets WHERE archi
 # Or use DB Browser for SQLite (GUI): https://sqlitebrowser.org
 ```
 
+[↑ Back to top](#orkestra)
+
 ---
 
 ## 📦 TOON Format
 
 All tool responses use TOON (Tokens Object Oriented Notation) — a compact typed shorthand that cuts average ticket representation from ~400 tokens (JSON) to ~120 tokens.
 
-```
+```toon
 TOON/1 T{id:myapp-001,t:"Fix auth bug",s:ip,p:h,typ:bug,lbl:[auth,sec],ca:2024-01-15,ua:2024-01-15T10:00:00Z}
 ```
 
@@ -137,16 +155,21 @@ TOON/1 T{id:myapp-001,t:"Fix auth bug",s:ip,p:h,typ:bug,lbl:[auth,sec],ca:2024-0
 
 **Error envelopes:**
 
-```
+```toon
 TOON/1 ERR{code:not_found,msg:"myapp-999 does not exist"}
 TOON/1 ERR{code:conflict,msg:"myapp-002 already claimed"}
 TOON/1 ERR{code:seq_blocked,msg:"myapp-022 blocked: ord=1 not done"}
 TOON/1 ERR{code:invalid,msg:"exec_order must be unique within parent"}
 ```
 
+[↑ Back to top](#orkestra)
+
 ---
 
 ## 🛠️ MCP Tools Reference
+
+<details>
+<summary>Show all 13 tools</summary>
 
 ### Ticket Lifecycle
 
@@ -157,6 +180,9 @@ TOON/1 ERR{code:invalid,msg:"exec_order must be unique within parent"}
 | `ticket_claim`   | `id`          | —                                                                                                 | `TOON/1 T{...}`     | Atomic CAS → `ip`; `ua` field is your etag                |
 | `ticket_update`  | `id`          | `etag` `title` `status` `priority` `type` `description` `assignee` `labels` `exec_mode` `exec_order` | `TOON/1 T{...}` | Supply `etag` (ua field) for optimistic locking          |
 | `ticket_archive` | `id`          | —                                                                                                 | `TOON/1 {ok:true}`  | Soft delete — sets `archived_at`                          |
+
+> [!WARNING]
+> `ticket_archive` is a soft delete but is not reversible through MCP tools. Archived tickets are hidden from all default queries. If you need to recover an archived ticket, you must access the SQLite database directly.
 
 ### Discovery
 
@@ -176,13 +202,17 @@ TOON/1 ERR{code:invalid,msg:"exec_order must be unique within parent"}
 | `ticket_comment` | `id`, `body`                    | `author`      | `TOON/1 T{...}` (updated ticket)  |
 | `ticket_link`    | `from_id`, `to_id`, `link_type` | —             | `TOON/1 {ok:true}`                |
 
+</details>
+
+[↑ Back to top](#orkestra)
+
 ---
 
 ## 🔄 Workflows
 
 ### Core loop
 
-```
+```toon
 ticket_backlog          → pick highest-priority item
 ticket_claim id=X       → atomically move to ip (save ua as etag)
 (do the work)
@@ -191,7 +221,7 @@ ticket_update id=X s=dn etag=<ua>  → mark done
 
 ### Epic with parallel swarm
 
-```
+```toon
 ticket_create typ=ep t="Auth system"
 ticket_create parent_id=<epic> t="JWT middleware"   # exec_mode=par by default
 ticket_create parent_id=<epic> t="OAuth provider"
@@ -202,7 +232,7 @@ ticket_diagram id=<epic>  → Mermaid flowchart
 
 ### Sequential pipeline
 
-```
+```toon
 ticket_create typ=tsk t="Deploy pipeline" em=seq
 ticket_create parent_id=<pipeline> t="Run tests"        em=seq ord=1
 ticket_create parent_id=<pipeline> t="Build image"      em=seq ord=2
@@ -212,7 +242,7 @@ ticket_create parent_id=<pipeline> t="Push to registry" em=seq ord=3
 
 ### Etag optimistic locking
 
-```
+```toon
 ticket_get id=myapp-001       → ...ua:2024-01-15T10:05:22.123456789Z...
 ticket_update id=myapp-001 etag=2024-01-15T10:05:22.123456789Z s=dn
 # If another agent updated first → ERR{code:conflict} → re-read and retry
@@ -222,7 +252,7 @@ ticket_update id=myapp-001 etag=2024-01-15T10:05:22.123456789Z s=dn
 
 Multiple agents working from the same backlog compete safely via atomic claim:
 
-```
+```toon
 # Agent A                           # Agent B
 ticket_backlog                      ticket_backlog
 → [myapp-003, myapp-004, ...]       → [myapp-003, myapp-004, ...]
@@ -233,11 +263,13 @@ ticket_claim id=myapp-003           ticket_claim id=myapp-003
                                     → T{s:ip,...}  ✓
 ```
 
+[↑ Back to top](#orkestra)
+
 ---
 
 ## 🗄️ Architecture
 
-```
+```text
 HTTP request
     │
     ▼
@@ -284,6 +316,8 @@ Response path:
 - **Soft delete** — `archived_at DATETIME NULL`; all queries default to `AND archived_at IS NULL`
 - **Sequential ordering** — `UNIQUE(parent_id, exec_order)` at DB level; `ticket_claim` checks all lower `exec_order` siblings have `status = 'dn'` in a transaction
 - **PROJECT_ID scoping** — all SQL queries append `AND project_id = ?`; ticket IDs embed the project slug (`myapp-001`) for unambiguous cross-project references
+
+[↑ Back to top](#orkestra)
 
 ---
 
@@ -355,6 +389,8 @@ func TestTicketReopen(t *testing.T) {
 go test ./...
 ```
 
+[↑ Back to top](#orkestra)
+
 ---
 
 ## 🧩 Multi-Project Setup
@@ -384,6 +420,8 @@ claude mcp add orkestra-payments --transport http http://localhost:8081/sse
 
 The LLM sees two namespaced tool sets (`orkestra-auth__ticket_create`, `orkestra-payments__ticket_backlog`) and ticket IDs self-identify their project (`auth-001`, `payments-042`).
 
+[↑ Back to top](#orkestra)
+
 ---
 
 ## 🛡️ Data Safety
@@ -393,6 +431,8 @@ Three layers:
 1. **WAL mode** — `PRAGMA journal_mode=WAL` prevents corruption under concurrent reads
 2. **Periodic backup** — background goroutine runs `VACUUM INTO` every `BACKUP_INTERVAL` (default 1h); keeps last `BACKUP_KEEP` (default 24) backups in `BACKUP_DIR`
 3. **Docker named volume** — survives `docker compose down`; destroyed only by `docker compose down -v`
+
+[↑ Back to top](#orkestra)
 
 ---
 
@@ -418,6 +458,8 @@ go test -v ./internal/toon/...
 | `internal/toon`    | 15    | Encoding, special chars, board format, error envelopes  |
 | `internal/mcp`     | 6     | Tool registration, TOON encoding, conflict, seq_blocked |
 | `cmd/server`       | 3     | HTTP /health, /skill endpoint, bearer auth              |
+
+[↑ Back to top](#orkestra)
 
 ---
 
@@ -447,6 +489,8 @@ curl http://localhost:8080/health | jq .
 curl http://localhost:8080/skill
 ```
 
+[↑ Back to top](#orkestra)
+
 ---
 
 ## 🤝 Contributing
@@ -458,14 +502,20 @@ Pull requests, bug reports, and feature ideas are all welcome.
 - **Security disclosure** → [SECURITY.md](SECURITY.md)
 - **What changed when** → [CHANGELOG.md](CHANGELOG.md)
 
+[↑ Back to top](#orkestra)
+
 ---
 
 ## 🙏 Acknowledgments
 
 Orkestra stands on the shoulders of `mcp-go`, `modernc.org/sqlite`, and the rest of the Go ecosystem. See [ACKNOWLEDGMENTS.md](ACKNOWLEDGMENTS.md) for the full list.
 
+[↑ Back to top](#orkestra)
+
 ---
 
 ## 📜 License
 
 MIT — see [LICENSE](LICENSE). Use it, fork it, ship it.
+
+[↑ Back to top](#orkestra)

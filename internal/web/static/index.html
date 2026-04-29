@@ -6,33 +6,189 @@
   <title>Orkestra — Kanban</title>
   <link rel="stylesheet" href="/vendor/tailwind.css">
   <script defer src="/vendor/alpine.min.js"></script>
+  <style>
+    :root {
+      --color-bg: #f9fafb;
+      --color-surface: #ffffff;
+      --color-text: #111827;
+      --color-text-muted: #6b7280;
+      --color-border: #e5e7eb;
+      --color-focus-ring: #6366f1;
+      --color-accent: #4f46e5;
+      --color-priority-p0: #dc2626;
+      --color-priority-p1: #f97316;
+      --color-priority-p2: #2563eb;
+      --color-priority-p3: #6b7280;
+      --color-status-bk: #6b7280;
+      --color-status-td: #2563eb;
+      --color-status-ip: #f59e0b;
+      --color-status-bl: #dc2626;
+      --color-status-dn: #16a34a;
+      --color-status-cl: #4b5563;
+      --font-size-xs: 0.75rem;
+      --font-size-sm: 0.875rem;
+      --font-size-base: 1rem;
+      --font-size-lg: 1.125rem;
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 12px;
+      --motion-fast: 120ms;
+      --motion-base: 200ms;
+      --motion-slow: 320ms;
+      --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+      --z-backdrop: 40;
+      --z-panel: 50;
+      --z-toast: 60;
+    }
+
+    @keyframes card-enter {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--color-focus-ring);
+      outline-offset: 2px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .focus\:not-sr-only:focus {
+      position: static;
+      width: auto;
+      height: auto;
+      padding: 0.5rem 1rem;
+      margin: 0;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
+    }
+
+    .card-enter {
+      animation: card-enter var(--motion-base) var(--easing-standard) var(--delay, 0ms) both;
+    }
+
+    .spin-anim {
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+
+    .skeleton-row {
+      height: 1rem;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 400px 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+
+    /* Component classes */
+    .pill {
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.125rem 0.5rem;
+      border-radius: var(--radius-lg);
+    }
+
+    .id-badge {
+      font-family: ui-monospace, monospace;
+      font-size: var(--font-size-xs);
+      background: var(--color-bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: white;
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      transition: background var(--motion-fast);
+    }
+
+    /* Responsive header: wrap controls below 900px */
+    @media (max-width: 900px) {
+      header.site-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      header.site-header .header-controls {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    }
+
+  </style>
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased h-screen overflow-hidden"
+<body class="bg-gray-50 text-gray-900 antialiased flex flex-col h-screen"
       x-data="kanban()"
       x-init="loadData()"
-      @keydown.escape.window="closePanel()">
+      @keydown.escape.window="closePanel(); dismissToast()">
+
+  <!-- Skip to content link -->
+  <a href="#board" class="sr-only focus:not-sr-only absolute top-2 left-2 z-50 bg-white text-indigo-700 font-semibold rounded shadow px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">Skip to board</a>
+
+  <!-- Live announcement region for screen readers -->
+  <div class="sr-only" aria-live="polite" aria-atomic="true" x-text="announcement"></div>
 
   <!-- Top Bar -->
-  <header class="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-4 shadow-sm">
+  <header class="site-header bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-4 shadow-sm shrink-0">
     <div class="flex items-center gap-3 shrink-0">
-      <span class="text-xl font-semibold tracking-tight">🎵 Orkestra</span>
-      <span class="text-gray-300">·</span>
+      <span class="text-xl font-semibold tracking-tight" aria-hidden="true">🎵</span>
+      <span class="text-xl font-semibold tracking-tight">Orkestra</span>
+      <span class="text-gray-300" aria-hidden="true">·</span>
       <span class="text-sm font-mono text-gray-600" x-text="project || '...'"></span>
     </div>
 
     <div class="flex-1"></div>
 
-    <div class="flex items-center gap-3">
+    <div class="header-controls flex items-center gap-3">
       <div class="relative">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm" aria-hidden="true">🔍</span>
         <input type="text"
                x-model="search"
+               @input="announceFilterChange()"
                aria-label="Search tickets"
                placeholder="Search tickets..."
                class="pl-9 pr-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 w-64 bg-gray-50" />
       </div>
 
       <select x-model="filterType"
+              @change="announceFilterChange()"
               aria-label="Filter by type"
               class="text-sm border border-gray-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200">
         <option value="">All Types</option>
@@ -44,6 +200,7 @@
       </select>
 
       <select x-model="filterPriority"
+              @change="announceFilterChange()"
               aria-label="Filter by priority"
               class="text-sm border border-gray-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200">
         <option value="">All Priorities</option>
@@ -55,100 +212,122 @@
 
       <button @click="loadData()"
               :disabled="loading"
+              :aria-busy="loading"
               title="Refresh tickets"
-              aria-label="Refresh"
-              class="p-2 rounded-md hover:bg-gray-100 text-gray-600 disabled:opacity-50">
-        <span class="inline-block" :class="loading ? 'spin-anim' : ''">↻</span>
+              aria-label="Refresh tickets"
+              class="btn p-2 hover:bg-gray-100 text-gray-600 disabled:opacity-50">
+        <span class="inline-block" :class="loading ? 'spin-anim' : ''" aria-hidden="true">↻</span>
       </button>
     </div>
   </header>
 
   <!-- Active Label Filter Chips -->
   <template x-if="filterLabels.length > 0">
-    <div class="bg-white border-b border-gray-200 px-6 py-2 flex items-center gap-2 flex-wrap">
+    <div class="bg-white border-b border-gray-200 px-6 py-2 flex items-center gap-2 flex-wrap shrink-0">
       <span class="text-xs text-gray-500 uppercase tracking-wide">Filtering by labels:</span>
       <template x-for="label in filterLabels" :key="label">
         <button @click="toggleLabel(label)"
+                :aria-pressed="filterLabels.includes(label)"
                 class="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-indigo-100 text-indigo-700 rounded-full hover:bg-indigo-200">
           <span x-text="label"></span>
-          <span class="text-indigo-500">×</span>
+          <span aria-hidden="true" class="text-indigo-500">×</span>
         </button>
       </template>
-      <button @click="filterLabels = []"
-              class="text-xs text-gray-500 hover:text-gray-700 underline ml-2">Clear all</button>
+      <button @click="filterLabels = []; announceFilterChange()"
+              class="btn text-xs text-gray-500 hover:text-gray-700 border-transparent bg-transparent underline ml-2">Clear all</button>
     </div>
   </template>
 
   <!-- Board -->
-  <main class="h-[calc(100vh-57px)] overflow-x-auto overflow-y-hidden">
-    <div class="flex gap-4 p-4 min-w-max h-full">
-      <template x-for="col in columns" :key="col.code">
-        <section class="w-80 shrink-0 flex flex-col bg-gray-100/60 rounded-xl border border-gray-200">
-          <header class="px-4 py-3 flex items-center justify-between border-b border-gray-200">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full" :class="col.dot"></span>
-              <h2 class="text-xs font-semibold text-gray-700 uppercase tracking-wider" x-text="col.label"></h2>
-            </div>
-            <span class="text-xs font-medium text-gray-500 bg-white px-2 py-0.5 rounded-full border border-gray-200"
-                  x-text="filteredTickets(col.code).length"></span>
-          </header>
+  <main id="board" class="flex-1 min-h-0 overflow-x-auto overflow-y-hidden">
+    <!-- Empty board state when all columns are empty after filtering -->
+    <template x-if="allColumnsEmpty()">
+      <div class="flex items-center justify-center h-full">
+        <div class="text-center text-gray-500">
+          <p class="text-lg font-medium mb-1">No tickets match your filters</p>
+          <p class="text-sm text-gray-400">Try adjusting your search or filter criteria</p>
+        </div>
+      </div>
+    </template>
 
-          <div class="flex-1 overflow-y-auto col-scroll p-3 space-y-2">
-            <template x-for="(t, index) in filteredTickets(col.code)" :key="t.id">
-              <article @click="openTicket(t.id)"
-                       @keydown.enter.prevent="openTicket(t.id)"
-                       @keydown.space.prevent="openTicket(t.id)"
-                       tabindex="0"
-                       role="button"
-                       :aria-label="'Open ticket ' + t.id"
-                       class="card-enter group cursor-pointer bg-white rounded-lg shadow-sm border border-gray-100 p-3 hover:-translate-y-0.5 hover:shadow-md transition-all duration-150"
-                       :style="'animation-delay: ' + (index * 30) + 'ms'">
-                <div class="flex items-start justify-between gap-2 mb-1.5">
-                  <div class="flex items-center gap-1.5 min-w-0">
-                    <span class="text-sm" x-text="typeIcon(t.type)" :title="typeLabel(t.type)"></span>
-                    <span class="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100"
-                          x-text="t.id"></span>
-                  </div>
-                  <span class="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded-full shrink-0"
-                        :class="priorityClass(t.priority)"
-                        x-text="priorityLabel(t.priority)"></span>
-                </div>
-
-                <h3 class="text-sm font-medium text-gray-900 line-clamp-2 leading-snug" x-text="t.title"></h3>
-
-                <template x-if="t.labels && t.labels.length > 0">
-                  <div class="flex flex-wrap gap-1 mt-2">
-                    <template x-for="label in t.labels" :key="label">
-                      <button @click.stop="toggleLabel(label)"
-                              class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors"
-                              :class="filterLabels.includes(label) ? 'bg-indigo-100 text-indigo-700' : ''"
-                              x-text="label"></button>
-                    </template>
-                  </div>
-                </template>
-
-                <div class="flex items-center justify-between mt-2.5 text-[11px] text-gray-500">
-                  <span class="truncate" x-text="t.assignee || ''"></span>
-                  <span class="shrink-0" x-text="formatDate(t.created_at)"></span>
-                </div>
-              </article>
-            </template>
-
-            <template x-if="filteredTickets(col.code).length === 0">
-              <div class="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center text-xs text-gray-400">
-                No tickets
+    <template x-if="!allColumnsEmpty()">
+      <div class="flex gap-4 p-4 min-w-max h-full">
+        <template x-for="col in columns" :key="col.code">
+          <section class="w-80 shrink-0 flex flex-col bg-gray-100/60 rounded-xl border border-gray-200">
+            <header class="px-4 py-3 flex items-center justify-between border-b border-gray-200">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full" :class="col.dot" aria-hidden="true"></span>
+                <h2 class="text-xs font-semibold text-gray-700 uppercase tracking-wider" x-text="col.label"></h2>
               </div>
-            </template>
-          </div>
-        </section>
-      </template>
-    </div>
+              <span class="text-xs bg-white px-2 py-0.5 rounded-full border border-gray-200"
+                    :class="filteredTickets(col.code).length > 0 ? 'font-semibold text-gray-700' : 'font-medium text-gray-400'"
+                    x-text="filteredTickets(col.code).length"
+                    :aria-label="col.label + ': ' + filteredTickets(col.code).length + ' tickets'"></span>
+            </header>
+
+            <div class="flex-1 overflow-y-auto col-scroll p-3 space-y-2">
+              <template x-for="(t, index) in filteredTickets(col.code)" :key="t.id">
+                <div @click="openTicket(t.id)"
+                         @keydown.enter.prevent="openTicket(t.id)"
+                         @keydown.space.prevent="openTicket(t.id)"
+                         tabindex="0"
+                         role="button"
+                         :aria-label="'Open ticket ' + t.id + ': ' + t.title"
+                         class="card-enter group cursor-pointer bg-white rounded-lg shadow-sm border border-gray-100 p-3 hover:-translate-y-0.5 hover:shadow-md transition-all duration-150"
+                         :style="'--delay: calc(' + Math.min(index, 10) + ' * 20ms)'">
+                  <div class="flex items-start justify-between gap-2 mb-1.5">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                      <span class="text-sm" x-text="typeIcon(t.type)" :aria-label="typeLabel(t.type)" :title="typeLabel(t.type)"></span>
+                      <span class="id-badge"
+                            x-text="t.id"></span>
+                    </div>
+                    <span class="shrink-0"
+                          :class="priorityClass(t.priority)"
+                          x-text="priorityLabel(t.priority)"></span>
+                  </div>
+
+                  <h3 class="text-sm font-medium text-gray-900 line-clamp-2 leading-snug" x-text="t.title"></h3>
+
+                  <template x-if="t.labels && t.labels.length > 0">
+                    <div class="flex flex-wrap gap-1 mt-2">
+                      <template x-for="label in t.labels" :key="label">
+                        <button @click.stop="toggleLabel(label)"
+                                :aria-pressed="filterLabels.includes(label)"
+                                class="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors"
+                                :class="filterLabels.includes(label) ? 'bg-indigo-100 text-indigo-700' : ''"
+                                x-text="label"></button>
+                      </template>
+                    </div>
+                  </template>
+
+                  <div class="flex items-center justify-between mt-2.5 text-xs text-gray-500">
+                    <span class="truncate" x-text="t.assignee || ''"></span>
+                    <span class="shrink-0" x-text="formatDate(t.created_at)"></span>
+                  </div>
+                </div>
+              </template>
+
+              <template x-if="filteredTickets(col.code).length === 0">
+                <div class="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center text-xs text-gray-400">
+                  No tickets
+                </div>
+              </template>
+            </div>
+          </section>
+        </template>
+      </div>
+    </template>
   </main>
 
   <!-- Backdrop -->
   <div x-show="panelOpen"
        x-transition.opacity
        @click="closePanel()"
+       @keydown.enter.prevent="closePanel()"
+       @keydown.space.prevent="closePanel()"
+       role="button"
+       tabindex="0"
+       aria-label="Close panel"
        class="fixed inset-0 bg-black/20 z-40"
        style="display: none;"></div>
 
@@ -160,13 +339,22 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="translate-x-0"
          x-transition:leave-end="translate-x-full"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="panel-title"
+         tabindex="-1"
          class="fixed top-0 right-0 h-full w-[420px] bg-white shadow-2xl z-50 flex flex-col"
          style="display: none;"
-         @click.stop>
+         @click.stop
+         @keydown="trapFocus($event)">
+
+    <span id="panel-title" class="sr-only">Ticket details</span>
 
     <template x-if="panelLoading">
-      <div class="flex-1 flex items-center justify-center text-gray-400 text-sm">
-        Loading...
+      <div class="flex-1 flex flex-col justify-center px-6 py-8 space-y-4">
+        <div class="skeleton-row w-3/4"></div>
+        <div class="skeleton-row w-full"></div>
+        <div class="skeleton-row w-5/6"></div>
       </div>
     </template>
 
@@ -174,25 +362,23 @@
       <div class="flex flex-col h-full">
         <header class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
           <div class="flex items-center gap-2 min-w-0">
-            <span class="text-lg" x-text="typeIcon(selected.type)"></span>
-            <span class="text-xs font-mono text-gray-500 bg-gray-50 px-2 py-1 rounded border border-gray-100"
+            <span class="text-lg" x-text="typeIcon(selected.type)" :aria-label="typeLabel(selected.type)"></span>
+            <span class="id-badge"
                   x-text="selected.id"></span>
           </div>
           <button @click="closePanel()"
                   title="Close panel"
-                  aria-label="Close"
-                  class="text-gray-400 hover:text-gray-700 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100">×</button>
+                  aria-label="Close panel"
+                  class="text-gray-500 hover:text-gray-700 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100">×</button>
         </header>
 
         <div class="flex-1 overflow-y-auto px-5 py-4 space-y-5">
           <h2 class="text-xl font-semibold leading-tight text-gray-900" x-text="selected.title"></h2>
 
           <div class="flex flex-wrap items-center gap-2">
-            <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full"
-                  :class="statusClass(selected.status)"
+            <span :class="statusClass(selected.status)"
                   x-text="statusLabel(selected.status)"></span>
-            <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full"
-                  :class="priorityClass(selected.priority)"
+            <span :class="priorityClass(selected.priority)"
                   x-text="priorityLabel(selected.priority) + ' priority'"></span>
             <span class="text-xs text-gray-600 px-2 py-1 rounded-full bg-gray-100"
                   x-text="typeLabel(selected.type)"></span>
@@ -215,7 +401,7 @@
           <template x-if="selected.labels && selected.labels.length > 0">
             <div class="flex flex-wrap gap-1">
               <template x-for="label in selected.labels" :key="label">
-                <span class="text-[11px] px-2 py-0.5 rounded bg-gray-100 text-gray-600"
+                <span class="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600"
                       x-text="label"></span>
               </template>
             </div>
@@ -247,9 +433,9 @@
                 <template x-for="(link, i) in selected.links" :key="i">
                   <li class="text-xs text-gray-700 bg-gray-50 px-2 py-1 rounded border border-gray-100">
                     <span class="font-mono" x-text="link.from_id"></span>
-                    <span class="text-gray-400 mx-1">→</span>
+                    <span class="text-gray-500 mx-1" aria-hidden="true">→</span>
                     <span class="font-mono" x-text="link.to_id"></span>
-                    <span class="ml-2 text-[10px] uppercase font-semibold text-indigo-600" x-text="link.link_type"></span>
+                    <span class="ml-2 text-xs uppercase font-semibold text-indigo-600" x-text="link.link_type"></span>
                   </li>
                 </template>
               </ul>
@@ -266,7 +452,7 @@
                   <div class="bg-gray-50 border border-gray-200 rounded-md p-3">
                     <div class="flex items-center justify-between mb-1">
                       <span class="text-xs font-semibold text-gray-800" x-text="c.author"></span>
-                      <span class="text-[11px] text-gray-500" x-text="formatDate(c.created_at)"></span>
+                      <span class="text-xs text-gray-500" x-text="formatDate(c.created_at)"></span>
                     </div>
                     <p class="text-sm text-gray-700 whitespace-pre-wrap" x-text="c.body"></p>
                   </div>
@@ -276,13 +462,31 @@
           </template>
         </div>
 
-        <footer class="px-5 py-3 border-t border-gray-200 text-[11px] text-gray-500 flex items-center justify-between">
+        <footer class="px-5 py-3 border-t border-gray-200 text-xs text-gray-500 flex items-center justify-between">
           <span>Created <span x-text="formatDate(selected.created_at)"></span></span>
           <span>Updated <span x-text="formatDate(selected.updated_at)"></span></span>
         </footer>
       </div>
     </template>
   </aside>
+
+  <!-- Toast notification -->
+  <div x-show="toast.visible"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0 translate-x-8"
+       x-transition:enter-end="opacity-100 translate-x-0"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100 translate-x-0"
+       x-transition:leave-end="opacity-0 translate-x-8"
+       role="alert"
+       aria-live="assertive"
+       class="fixed bottom-5 right-5 flex items-center gap-3 bg-gray-900 text-white text-sm px-4 py-3 rounded-lg shadow-lg max-w-sm"
+       style="z-index: var(--z-toast); display: none;">
+    <span x-text="toast.message" class="flex-1"></span>
+    <button @click="dismissToast()"
+            aria-label="Dismiss notification"
+            class="text-gray-400 hover:text-white ml-2 shrink-0">×</button>
+  </div>
 
   <script>
     function kanban() {
@@ -297,6 +501,10 @@
         filterType: '',
         filterPriority: '',
         filterLabels: [],
+        announcement: '',
+        toast: { visible: false, message: '' },
+        _lastFocusedCard: null,
+        _toastTimer: null,
 
         columns: [
           { code: 'bk', label: 'Backlog',     dot: 'bg-gray-400' },
@@ -306,6 +514,23 @@
           { code: 'dn', label: 'Done',        dot: 'bg-green-500' },
           { code: 'cl', label: 'Cancelled',   dot: 'bg-gray-300' },
         ],
+
+        showToast(msg) {
+          this.toast.message = msg;
+          this.toast.visible = true;
+          if (this._toastTimer) clearTimeout(this._toastTimer);
+          this._toastTimer = setTimeout(() => {
+            this.toast.visible = false;
+          }, 4000);
+        },
+
+        dismissToast() {
+          this.toast.visible = false;
+          if (this._toastTimer) {
+            clearTimeout(this._toastTimer);
+            this._toastTimer = null;
+          }
+        },
 
         async loadData() {
           this.loading = true;
@@ -318,36 +543,104 @@
             this.tickets = Array.isArray(ticketsRes) ? ticketsRes : [];
           } catch (e) {
             console.error('Failed to load data:', e);
+            this.showToast('Failed to load tickets. Please try again.');
           } finally {
             this.loading = false;
+            this.announcement = this.tickets.length + ' tickets loaded';
           }
         },
 
         async openTicket(id) {
+          this._lastFocusedCard = document.activeElement;
           this.panelOpen = true;
           this.panelLoading = true;
           this.selected = null;
+          this.announcement = 'Loading ticket ' + id;
+          this.$nextTick(() => {
+            const dialog = this.$el.querySelector('[role="dialog"]');
+            if (dialog) dialog.focus();
+          });
           try {
             const res = await fetch('/api/tickets/' + encodeURIComponent(id));
             if (res.ok) {
               this.selected = await res.json();
+              this.announcement = 'Ticket ' + this.selected.title + ' loaded';
             }
           } catch (e) {
             console.error('Failed to load ticket:', e);
+            this.showToast('Failed to load ticket details. Please try again.');
           } finally {
             this.panelLoading = false;
+            this.$nextTick(() => {
+              const panel = document.querySelector('aside[role="dialog"]');
+              if (panel) {
+                const focusable = panel.querySelectorAll(
+                  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                if (focusable.length > 0) focusable[0].focus();
+              }
+            });
           }
         },
 
         closePanel() {
           this.panelOpen = false;
           this.selected = null;
+          if (this._lastFocusedCard && typeof this._lastFocusedCard.focus === 'function') {
+            this.$nextTick(() => {
+              this._lastFocusedCard.focus();
+              this._lastFocusedCard = null;
+            });
+          }
+        },
+
+        trapFocus(event) {
+          if (event.key !== 'Tab') return;
+          const panel = event.currentTarget;
+          const focusable = Array.from(panel.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          ));
+          if (focusable.length === 0) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey) {
+            if (document.activeElement === first) {
+              event.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last) {
+              event.preventDefault();
+              first.focus();
+            }
+          }
         },
 
         toggleLabel(label) {
           const i = this.filterLabels.indexOf(label);
           if (i === -1) this.filterLabels.push(label);
           else this.filterLabels.splice(i, 1);
+          this.announceFilterChange();
+        },
+
+        announceFilterChange() {
+          this.$nextTick(() => {
+            const total = this.tickets.filter(t => {
+              const q = this.search.trim().toLowerCase();
+              if (this.filterType && t.type !== this.filterType) return false;
+              if (this.filterPriority && t.priority !== this.filterPriority) return false;
+              if (this.filterLabels.length > 0) {
+                const tl = t.labels || [];
+                if (!this.filterLabels.every(l => tl.includes(l))) return false;
+              }
+              if (q) {
+                const hay = (t.title || '').toLowerCase() + ' ' + (t.description || '').toLowerCase();
+                if (!hay.includes(q)) return false;
+              }
+              return true;
+            }).length;
+            this.announcement = total + ' tickets shown';
+          });
         },
 
         filteredTickets(status) {
@@ -368,6 +661,11 @@
           });
         },
 
+        allColumnsEmpty() {
+          return !this.loading &&
+            this.columns.every(col => this.filteredTickets(col.code).length === 0);
+        },
+
         typeIcon(t) {
           return ({ bug: '🐛', ft: '✨', tsk: '✅', ep: '📚', chr: '🔧' })[t] || '•';
         },
@@ -379,11 +677,11 @@
         },
         priorityClass(p) {
           return ({
-            cr: 'bg-red-100 text-red-700',
-            h:  'bg-orange-100 text-orange-700',
-            m:  'bg-blue-100 text-blue-700',
-            l:  'bg-gray-100 text-gray-600',
-          })[p] || 'bg-gray-100 text-gray-600';
+            cr: 'pill bg-red-100 text-red-700',
+            h:  'pill bg-orange-100 text-orange-700',
+            m:  'pill bg-blue-100 text-blue-700',
+            l:  'pill bg-gray-100 text-gray-600',
+          })[p] || 'pill bg-gray-100 text-gray-600';
         },
         statusLabel(s) {
           return ({
@@ -393,13 +691,13 @@
         },
         statusClass(s) {
           return ({
-            bk: 'bg-gray-100 text-gray-700',
-            td: 'bg-blue-100 text-blue-700',
-            ip: 'bg-amber-100 text-amber-700',
-            bl: 'bg-red-100 text-red-700',
-            dn: 'bg-green-100 text-green-700',
-            cl: 'bg-gray-100 text-gray-500',
-          })[s] || 'bg-gray-100 text-gray-700';
+            bk: 'pill bg-gray-100 text-gray-700',
+            td: 'pill bg-blue-100 text-blue-700',
+            ip: 'pill bg-amber-100 text-amber-700',
+            bl: 'pill bg-red-100 text-red-700',
+            dn: 'pill bg-green-100 text-green-700',
+            cl: 'pill bg-gray-100 text-gray-500',
+          })[s] || 'pill bg-gray-100 text-gray-700';
         },
         formatDate(s) {
           if (!s) return '';

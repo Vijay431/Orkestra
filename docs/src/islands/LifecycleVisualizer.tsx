@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type State = 'bk' | 'td' | 'ip' | 'dn' | 'bl' | 'cl';
 
@@ -11,13 +11,29 @@ interface StateMeta {
   y: number;
 }
 
-const STATES: StateMeta[] = [
-  { id: 'bk', label: 'bk', full: 'backlog', color: '#6B7785', x: 80, y: 130 },
-  { id: 'td', label: 'td', full: 'todo', color: '#FFE066', x: 220, y: 60 },
-  { id: 'ip', label: 'ip', full: 'in_progress', color: '#00ADD8', x: 360, y: 130 },
-  { id: 'bl', label: 'bl', full: 'blocked', color: '#ff6464', x: 360, y: 240 },
-  { id: 'dn', label: 'dn', full: 'done', color: '#9BE564', x: 500, y: 60 },
-  { id: 'cl', label: 'cl', full: 'cancelled', color: '#cccccc', x: 500, y: 200 },
+/** Read a CSS custom property from :root at mount time. SSR-safe. */
+function getCSSToken(name: string): string {
+  if (typeof document === 'undefined') return '';
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+// Fallback palette used during SSR / before hydration
+const FALLBACK_COLORS: Record<State, string> = {
+  bk: '#6B7785',
+  td: '#FFE066',
+  ip: '#00ADD8',
+  bl: '#ff6464',
+  dn: '#9BE564',
+  cl: '#cccccc',
+};
+
+const STATE_DEFS: Omit<StateMeta, 'color'>[] = [
+  { id: 'bk', label: 'bk', full: 'backlog',      x: 80,  y: 130 },
+  { id: 'td', label: 'td', full: 'todo',          x: 220, y: 60  },
+  { id: 'ip', label: 'ip', full: 'in_progress',   x: 360, y: 130 },
+  { id: 'bl', label: 'bl', full: 'blocked',       x: 360, y: 240 },
+  { id: 'dn', label: 'dn', full: 'done',          x: 500, y: 60  },
+  { id: 'cl', label: 'cl', full: 'cancelled',     x: 500, y: 200 },
 ];
 
 interface Edge {
@@ -37,29 +53,53 @@ const EDGES: Edge[] = [
   { from: 'ip', to: 'cl', via: 'ticket_update s=cl' },
 ];
 
-function pos(id: State) {
-  return STATES.find((s) => s.id === id)!;
+function pos(states: StateMeta[], id: State) {
+  return states.find((s) => s.id === id) ?? states[0];
 }
 
 export default function LifecycleVisualizer() {
   const [active, setActive] = useState<State | null>('bk');
+
+  // Read CSS tokens once after mount; fall back to hardcoded values for SSR
+  const [colors, setColors] = useState<Record<State, string>>(FALLBACK_COLORS);
+  const [edgeInactive, setEdgeInactive] = useState('#3a4a60');
+  const [bgText, setBgText] = useState('#0B0F14');
+  const [fgText, setFgText] = useState('#E6EDF3');
+
+  useEffect(() => {
+    const teal = getCSSToken('--ork-teal') || FALLBACK_COLORS.ip;
+    const gold = getCSSToken('--ork-gold') || FALLBACK_COLORS.td;
+    const green = getCSSToken('--ork-green') || FALLBACK_COLORS.dn;
+    const red = getCSSToken('--ork-red') || FALLBACK_COLORS.bl;
+    const bg = getCSSToken('--ork-bg') || '#0B0F14';
+    const text = getCSSToken('--ork-text') || '#E6EDF3';
+    const border = getCSSToken('--ork-border') || '#3a4a60';
+
+    setColors({ bk: '#6B7785', td: gold, ip: teal, bl: red, dn: green, cl: '#cccccc' });
+    setEdgeInactive(border);
+    setBgText(bg);
+    setFgText(text);
+  }, []);
+
+  const STATES: StateMeta[] = STATE_DEFS.map((s) => ({ ...s, color: colors[s.id] }));
   const outgoing = active ? EDGES.filter((e) => e.from === active) : [];
+  const activeColor = active ? colors[active] : edgeInactive;
 
   return (
     <div className="ork-lifecycle">
-      <svg viewBox="0 0 600 320" className="ork-lifecycle__svg" role="group" aria-label="Ticket lifecycle">
+      <svg viewBox="0 0 600 320" className="ork-lifecycle__svg" role="group" aria-label="Ticket lifecycle — interactive state diagram. Use arrow keys to navigate states.">
         <defs>
           <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3a4a60" />
+            <path d="M 0 0 L 10 5 L 0 10 z" fill={edgeInactive} />
           </marker>
           <marker id="arrow-active" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#00ADD8" />
+            <path d="M 0 0 L 10 5 L 0 10 z" fill={activeColor} />
           </marker>
         </defs>
 
         {EDGES.map((e, i) => {
-          const a = pos(e.from);
-          const b = pos(e.to);
+          const a = pos(STATES, e.from);
+          const b = pos(STATES, e.to);
           const isActive = active === e.from;
           return (
             <line
@@ -68,7 +108,7 @@ export default function LifecycleVisualizer() {
               y1={a.y}
               x2={b.x}
               y2={b.y}
-              stroke={isActive ? '#00ADD8' : '#3a4a60'}
+              stroke={isActive ? activeColor : edgeInactive}
               strokeWidth={isActive ? 2 : 1}
               markerEnd={isActive ? 'url(#arrow-active)' : 'url(#arrow)'}
               opacity={isActive || !active ? 1 : 0.35}
@@ -82,6 +122,7 @@ export default function LifecycleVisualizer() {
             transform={`translate(${s.x},${s.y})`}
             className="ork-lifecycle__node"
             data-active={active === s.id}
+            aria-current={active === s.id ? 'step' : undefined}
             onClick={() => setActive(s.id)}
             role="button"
             tabIndex={0}
@@ -89,22 +130,30 @@ export default function LifecycleVisualizer() {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 setActive(s.id);
+              } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                const idx = STATES.findIndex((st) => st.id === s.id);
+                setActive(STATES[(idx + 1) % STATES.length].id);
+              } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const idx = STATES.findIndex((st) => st.id === s.id);
+                setActive(STATES[(idx - 1 + STATES.length) % STATES.length].id);
               }
             }}
           >
             <circle r="28" fill={s.color} fillOpacity={active === s.id ? 1 : 0.15} stroke={s.color} strokeWidth="2" />
-            <text textAnchor="middle" y="6" fontFamily="JetBrains Mono, monospace" fontSize="14" fontWeight="600" fill={active === s.id ? '#0B0F14' : '#E6EDF3'}>
+            <text textAnchor="middle" y="6" fontFamily="JetBrains Mono, monospace" fontSize="14" fontWeight="600" fill={active === s.id ? bgText : fgText}>
               {s.label}
             </text>
           </g>
         ))}
       </svg>
 
-      <aside className="ork-lifecycle__detail">
+      <aside className="ork-lifecycle__detail" aria-live="polite">
         {active ? (
           <>
             <h4>
-              <code>{active}</code> — {pos(active).full}
+              <code>{active}</code> — {pos(STATES, active).full}
             </h4>
             {outgoing.length === 0 ? (
               <p>Terminal-ish. Move on by archiving.</p>
@@ -114,7 +163,7 @@ export default function LifecycleVisualizer() {
                   <li key={`${e.from}-${e.to}`}>
                     <span className="ork-lifecycle__via">{e.via}</span>
                     <span className="ork-lifecycle__arrow">→</span>
-                    <code>{e.to}</code> <span className="ork-lifecycle__sub">({pos(e.to).full})</span>
+                    <code>{e.to}</code> <span className="ork-lifecycle__sub">({pos(STATES, e.to).full})</span>
                   </li>
                 ))}
               </ul>
