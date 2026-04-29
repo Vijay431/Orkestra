@@ -81,6 +81,7 @@ export default function ToolExplorer() {
             <button
               className="ork-explorer__card-header"
               aria-expanded={openName === t.name}
+              aria-controls={`tool-detail-${t.name}`}
               onClick={() => setOpenName(openName === t.name ? null : t.name)}
             >
               <code className="ork-explorer__name">{t.name}</code>
@@ -88,7 +89,7 @@ export default function ToolExplorer() {
             </button>
             <p className="ork-explorer__summary">{t.summary}</p>
             {openName === t.name && (
-              <div className="ork-explorer__detail">
+              <div className="ork-explorer__detail" id={`tool-detail-${t.name}`}>
                 <h4>Parameters</h4>
                 <table>
                   <thead>

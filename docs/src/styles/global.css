@@ -2,8 +2,7 @@
    Overrides Starlight's CSS custom properties. Dark-only by design. */
 
 :root,
-:root[data-theme='dark'],
-:root[data-theme='light'] {
+:root[data-theme='dark'] {
   /* Palette */
   --ork-bg: #0B0F14;
   --ork-surface: #11161D;
@@ -11,7 +10,7 @@
   --ork-border: #243042;
   --ork-text: #E6EDF3;
   --ork-text-dim: #9DA9B7;
-  --ork-text-faint: #6B7785;
+  --ork-text-faint: #8b96a3;
   --ork-teal: #00ADD8;
   --ork-teal-dim: #007a9a;
   --ork-gold: #FFE066;
@@ -51,9 +50,15 @@
     'Menlo', 'Monaco', 'Consolas', monospace;
 }
 
-/* Force dark always */
+/* Force dark always — no light theme */
 :root[data-theme='light'] {
   color-scheme: dark;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ork-teal);
+  outline-offset: 2px;
+  border-radius: inherit;
 }
 
 html {
@@ -117,11 +122,8 @@ pre.mermaid {
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+  *, ::before, ::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

@@ -41,7 +41,7 @@ export default function ToonPlayground({ variant = 'full' }: Props) {
   return (
     <div className={`ork-playground ork-playground--${variant}`}>
       <div className="ork-playground__pane">
-        <header>
+        <header aria-live="polite">
           <span className="ork-playground__label">JSON</span>
           <span className="ork-playground__count">~{jsonTokens} tokens</span>
         </header>
@@ -54,19 +54,20 @@ export default function ToonPlayground({ variant = 'full' }: Props) {
         />
       </div>
 
-      <div className="ork-playground__divider" aria-hidden="true">
+      <div className="ork-playground__divider">
         <div className="ork-playground__badge" data-positive={savings > 0}>
           {savings > 0 ? `−${savings}%` : savings < 0 ? `+${-savings}%` : '0%'}
         </div>
+        <span className="sr-only">TOON format uses approximately {savings > 0 ? savings : 0}% fewer tokens than JSON</span>
       </div>
 
       <div className="ork-playground__pane">
-        <header>
+        <header aria-live="polite">
           <span className="ork-playground__label">TOON</span>
           <span className="ork-playground__count">~{toonTokens} tokens</span>
         </header>
         <pre className="ork-playground__output" aria-label="TOON output">
-          {error ? <span className="ork-playground__error">{error}</span> : toon}
+          {error ? <span className="ork-playground__error" role="alert">{error}</span> : toon}
         </pre>
       </div>
     </div>

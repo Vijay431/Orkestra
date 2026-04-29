@@ -47,7 +47,7 @@ export default function LifecycleVisualizer() {
 
   return (
     <div className="ork-lifecycle">
-      <svg viewBox="0 0 600 320" className="ork-lifecycle__svg" role="group" aria-label="Ticket lifecycle">
+      <svg viewBox="0 0 600 320" className="ork-lifecycle__svg" role="group" aria-label="Ticket lifecycle — interactive state diagram. Use arrow keys to navigate states.">
         <defs>
           <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M 0 0 L 10 5 L 0 10 z" fill="#3a4a60" />
@@ -82,6 +82,7 @@ export default function LifecycleVisualizer() {
             transform={`translate(${s.x},${s.y})`}
             className="ork-lifecycle__node"
             data-active={active === s.id}
+            aria-current={active === s.id ? 'step' : undefined}
             onClick={() => setActive(s.id)}
             role="button"
             tabIndex={0}
@@ -89,6 +90,14 @@ export default function LifecycleVisualizer() {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 setActive(s.id);
+              } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                const idx = STATES.findIndex((st) => st.id === s.id);
+                setActive(STATES[(idx + 1) % STATES.length].id);
+              } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const idx = STATES.findIndex((st) => st.id === s.id);
+                setActive(STATES[(idx - 1 + STATES.length) % STATES.length].id);
               }
             }}
           >
@@ -100,7 +109,7 @@ export default function LifecycleVisualizer() {
         ))}
       </svg>
 
-      <aside className="ork-lifecycle__detail">
+      <aside className="ork-lifecycle__detail" aria-live="polite">
         {active ? (
           <>
             <h4>

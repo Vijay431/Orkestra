@@ -41,10 +41,6 @@
   font: inherit;
   font-size: 0.9rem;
 }
-.ork-explorer__search:focus-visible {
-  outline: 2px solid var(--ork-teal);
-  outline-offset: 1px;
-}
 
 .ork-explorer__grid {
   list-style: none;
