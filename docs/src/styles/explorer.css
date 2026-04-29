@@ -22,7 +22,10 @@
   cursor: pointer;
   font-family: var(--sl-font-mono);
   font-size: 0.82rem;
-  transition: color var(--ork-dur-fast), background var(--ork-dur-fast), transform var(--ork-dur-fast), border-color var(--ork-dur-fast);
+  transition: color var(--ork-dur-fast) var(--ork-ease-standard),
+              background var(--ork-dur-fast) var(--ork-ease-standard),
+              transform var(--ork-dur-fast) var(--ork-ease-standard),
+              border-color var(--ork-dur-fast) var(--ork-ease-standard);
 }
 .ork-explorer__chip:hover { color: var(--ork-text); }
 .ork-explorer__chip[data-active='true'] {
@@ -56,7 +59,7 @@
   border-radius: var(--ork-radius-md);
   padding: 1rem 1.1rem;
   position: relative;
-  transition: border-color var(--ork-dur-fast);
+  transition: border-color var(--ork-dur-fast) var(--ork-ease-standard);
 }
 .ork-explorer__card:hover { border-color: var(--ork-teal-dim); }
 .ork-explorer__card[data-category='lifecycle']    { border-left: 3px solid var(--ork-teal);  }

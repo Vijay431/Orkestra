@@ -18,7 +18,7 @@
 }
 .ork-lifecycle__node {
   cursor: pointer;
-  transition: transform var(--ork-dur-fast);
+  transition: transform var(--ork-dur-fast) var(--ork-ease-standard);
 }
 .ork-lifecycle__node:hover { transform: translate(0, -2px); }
 .ork-lifecycle__node[data-active='true'] circle:first-child {

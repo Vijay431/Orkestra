@@ -130,7 +130,10 @@ curl http://localhost:8080/health`,
     font: inherit;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: color var(--ork-dur-fast), background var(--ork-dur-fast), transform var(--ork-dur-fast), border-color var(--ork-dur-fast);
+    transition: color var(--ork-dur-fast) var(--ork-ease-standard),
+                background var(--ork-dur-fast) var(--ork-ease-standard),
+                transform var(--ork-dur-fast) var(--ork-ease-standard),
+                border-color var(--ork-dur-fast) var(--ork-ease-standard);
   }
   .ork-install__tab:hover {
     color: var(--ork-text);

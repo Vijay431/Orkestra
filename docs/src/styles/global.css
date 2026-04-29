@@ -50,7 +50,7 @@
     'Menlo', 'Monaco', 'Consolas', monospace;
 
   /* Radii */
-  --ork-radius-sm: 6px;
+  --ork-radius-sm: 8px;
   --ork-radius-md: 12px;
   --ork-radius-lg: 14px;
   --ork-radius-pill: 999px;

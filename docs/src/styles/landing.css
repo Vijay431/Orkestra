@@ -46,7 +46,7 @@
   color: var(--ork-text-dim);
   text-decoration: none;
   font-size: 0.92rem;
-  transition: color var(--ork-dur-fast);
+  transition: color var(--ork-dur-fast) var(--ork-ease-standard);
 }
 .ork-nav__links a:hover { color: var(--ork-text); }
 
@@ -134,7 +134,10 @@
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
-  transition: color var(--ork-dur-fast), background var(--ork-dur-fast), transform var(--ork-dur-fast), border-color var(--ork-dur-fast);
+  transition: color var(--ork-dur-fast) var(--ork-ease-standard),
+              background var(--ork-dur-fast) var(--ork-ease-standard),
+              transform var(--ork-dur-fast) var(--ork-ease-standard),
+              border-color var(--ork-dur-fast) var(--ork-ease-standard);
 }
 .ork-btn:hover {
   border-color: var(--ork-teal);
