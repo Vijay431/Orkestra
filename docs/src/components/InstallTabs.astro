@@ -124,13 +124,13 @@ curl http://localhost:8080/health`,
   .ork-install__tab {
     background: var(--ork-surface);
     border: 1px solid var(--ork-border);
-    border-radius: 8px;
+    border-radius: var(--ork-radius-sm);
     color: var(--ork-text-dim);
     padding: 0.45rem 0.9rem;
     font: inherit;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: color var(--ork-dur-fast), background var(--ork-dur-fast), transform var(--ork-dur-fast), border-color var(--ork-dur-fast);
   }
   .ork-install__tab:hover {
     color: var(--ork-text);
@@ -144,7 +144,7 @@ curl http://localhost:8080/health`,
   .ork-install__panel {
     background: var(--ork-surface);
     border: 1px solid var(--ork-border);
-    border-radius: 12px;
+    border-radius: var(--ork-radius-md);
     padding: 1.25rem 1.5rem;
   }
   .ork-install__panel pre {

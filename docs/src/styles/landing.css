@@ -46,7 +46,7 @@
   color: var(--ork-text-dim);
   text-decoration: none;
   font-size: 0.92rem;
-  transition: color 0.15s;
+  transition: color var(--ork-dur-fast);
 }
 .ork-nav__links a:hover { color: var(--ork-text); }
 
@@ -65,7 +65,7 @@
   display: inline-block;
   padding: 0.3rem 0.7rem;
   border: 1px solid var(--ork-border);
-  border-radius: 999px;
+  border-radius: var(--ork-radius-pill);
   font-family: var(--sl-font-mono);
   font-size: 0.75rem;
   color: var(--ork-text-dim);
@@ -79,7 +79,7 @@
   font-weight: 700;
 }
 .ork-grad {
-  background: linear-gradient(120deg, #00ADD8 0%, #9BE564 50%, #FFE066 100%);
+  background: linear-gradient(120deg, var(--ork-teal) 0%, var(--ork-green) 50%, var(--ork-gold) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -127,14 +127,14 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.7rem 1.2rem;
-  border-radius: 8px;
+  border-radius: var(--ork-radius-sm);
   border: 1px solid var(--ork-border);
   background: transparent;
   color: var(--ork-text);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
-  transition: all 0.15s;
+  transition: color var(--ork-dur-fast), background var(--ork-dur-fast), transform var(--ork-dur-fast), border-color var(--ork-dur-fast);
 }
 .ork-btn:hover {
   border-color: var(--ork-teal);
@@ -144,12 +144,12 @@
 .ork-btn--primary {
   background: var(--ork-teal);
   border-color: var(--ork-teal);
-  color: #001016;
+  color: var(--sl-color-text-invert);
 }
 .ork-btn--primary:hover {
-  background: #6FE3FF;
-  border-color: #6FE3FF;
-  color: #001016;
+  background: var(--sl-color-accent-high);
+  border-color: var(--sl-color-accent-high);
+  color: var(--sl-color-text-invert);
 }
 
 /* Sections */
@@ -180,7 +180,7 @@
   padding: 4rem 1.5rem;
   background: var(--ork-surface);
   border: 1px solid var(--ork-border);
-  border-radius: 18px;
+  border-radius: var(--ork-radius-lg);
 }
 .ork-cta h2 {
   font-size: clamp(1.7rem, 3vw, 2.4rem);

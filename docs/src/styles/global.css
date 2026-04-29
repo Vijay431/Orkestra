@@ -48,6 +48,20 @@
     'Segoe UI', 'Roboto', sans-serif;
   --sl-font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'SF Mono',
     'Menlo', 'Monaco', 'Consolas', monospace;
+
+  /* Radii */
+  --ork-radius-sm: 6px;
+  --ork-radius-md: 12px;
+  --ork-radius-lg: 14px;
+  --ork-radius-pill: 999px;
+
+  /* Motion */
+  --ork-dur-fast: 120ms;
+  --ork-dur-base: 200ms;
+  --ork-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Breakpoints (for use in JS/comments — CSS can't use custom props in @media) */
+  /* --ork-bp-md: 768px; --ork-bp-lg: 960px; */
 }
 
 /* Force dark always — no light theme */
@@ -84,7 +98,7 @@ body {
 pre.mermaid {
   background: transparent !important;
   border: 1px solid var(--ork-border);
-  border-radius: 12px;
+  border-radius: var(--ork-radius-md);
   padding: 1.25rem;
   margin: 1.5rem 0;
   overflow-x: auto;
@@ -125,5 +139,35 @@ pre.mermaid {
   *, ::before, ::after {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+@layer components {
+  .ork-card {
+    background: var(--ork-surface);
+    border: 1px solid var(--ork-border);
+    border-radius: var(--ork-radius-md);
+  }
+
+  .ork-pill {
+    border-radius: var(--ork-radius-pill);
+    padding: 0.3rem 0.75rem;
+    font-family: var(--sl-font-mono, ui-monospace, monospace);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  .ork-eyebrow {
+    font-family: var(--sl-font-mono, ui-monospace, monospace);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ork-teal);
+  }
+
+  .ork-divider--dashed {
+    border-top: 1px dashed var(--ork-border);
   }
 }

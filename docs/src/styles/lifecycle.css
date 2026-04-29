@@ -5,7 +5,7 @@
   align-items: stretch;
   background: var(--ork-surface);
   border: 1px solid var(--ork-border);
-  border-radius: 14px;
+  border-radius: var(--ork-radius-lg);
   padding: 1.25rem;
 }
 @media (max-width: 760px) {
@@ -18,7 +18,7 @@
 }
 .ork-lifecycle__node {
   cursor: pointer;
-  transition: transform 0.15s;
+  transition: transform var(--ork-dur-fast);
 }
 .ork-lifecycle__node:hover { transform: translate(0, -2px); }
 .ork-lifecycle__node[data-active='true'] circle:first-child {
@@ -27,7 +27,7 @@
 .ork-lifecycle__detail {
   background: var(--ork-bg);
   border: 1px solid var(--ork-border);
-  border-radius: 10px;
+  border-radius: var(--ork-radius-md);
   padding: 1rem 1.1rem;
   font-size: 0.88rem;
 }
@@ -58,7 +58,7 @@
   gap: 0.35rem;
   padding: 0.5rem 0.6rem;
   background: var(--ork-surface);
-  border-radius: 6px;
+  border-radius: var(--ork-radius-sm);
   font-size: 0.82rem;
 }
 .ork-lifecycle__via {

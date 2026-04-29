@@ -18,11 +18,11 @@
   border: 1px solid var(--ork-border);
   color: var(--ork-text-dim);
   padding: 0.4rem 0.85rem;
-  border-radius: 999px;
+  border-radius: var(--ork-radius-pill);
   cursor: pointer;
   font-family: var(--sl-font-mono);
   font-size: 0.82rem;
-  transition: all 0.15s;
+  transition: color var(--ork-dur-fast), background var(--ork-dur-fast), transform var(--ork-dur-fast), border-color var(--ork-dur-fast);
 }
 .ork-explorer__chip:hover { color: var(--ork-text); }
 .ork-explorer__chip[data-active='true'] {
@@ -35,7 +35,7 @@
   min-width: 220px;
   background: var(--ork-surface);
   border: 1px solid var(--ork-border);
-  border-radius: 8px;
+  border-radius: var(--ork-radius-sm);
   padding: 0.55rem 0.9rem;
   color: var(--ork-text);
   font: inherit;
@@ -53,10 +53,10 @@
 .ork-explorer__card {
   background: var(--ork-surface);
   border: 1px solid var(--ork-border);
-  border-radius: 12px;
+  border-radius: var(--ork-radius-md);
   padding: 1rem 1.1rem;
   position: relative;
-  transition: border-color 0.15s;
+  transition: border-color var(--ork-dur-fast);
 }
 .ork-explorer__card:hover { border-color: var(--ork-teal-dim); }
 .ork-explorer__card[data-category='lifecycle']    { border-left: 3px solid var(--ork-teal);  }
@@ -137,7 +137,7 @@
   display: block;
   background: var(--ork-bg);
   border: 1px solid var(--ork-border);
-  border-radius: 6px;
+  border-radius: var(--ork-radius-sm);
   padding: 0.5rem 0.7rem;
   font-family: var(--sl-font-mono);
   font-size: 0.8rem;

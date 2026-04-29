@@ -4,7 +4,7 @@
   gap: 0;
   background: var(--ork-surface);
   border: 1px solid var(--ork-border);
-  border-radius: 14px;
+  border-radius: var(--ork-radius-lg);
   overflow: hidden;
   font-family: var(--sl-font-mono);
 }
@@ -80,7 +80,7 @@
   position: absolute;
   background: var(--ork-bg);
   border: 1px solid var(--ork-border);
-  border-radius: 999px;
+  border-radius: var(--ork-radius-pill);
   padding: 0.35rem 0.75rem;
   font-family: var(--sl-font-mono);
   font-size: 0.85rem;
