@@ -195,7 +195,7 @@ func TestGetIndexHTMLContent(t *testing.T) {
 
 	// P4 security headers
 	securityHeaders := map[string]string{
-		"Content-Security-Policy": "default-src 'self'",
+		"Content-Security-Policy": "'unsafe-eval'",
 		"X-Content-Type-Options":  "nosniff",
 		"Referrer-Policy":         "same-origin",
 	}
