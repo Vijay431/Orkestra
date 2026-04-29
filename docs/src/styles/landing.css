@@ -58,7 +58,7 @@
   align-items: center;
   padding: 3rem 0 5rem;
 }
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .ork-hero { grid-template-columns: 1fr; }
 }
 .ork-hero__pill {

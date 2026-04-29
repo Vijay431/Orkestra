@@ -31,6 +31,7 @@ export default defineConfig({
             mermaid.initialize({
               startOnLoad: false,
               theme: 'base',
+              // Palette mirrors --ork-* tokens in src/styles/global.css — keep in sync if colors change
               themeVariables: {
                 darkMode: true,
                 background: '#0B0F14',

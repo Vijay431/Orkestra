@@ -54,7 +54,7 @@ const EDGES: Edge[] = [
 ];
 
 function pos(states: StateMeta[], id: State) {
-  return states.find((s) => s.id === id)!;
+  return states.find((s) => s.id === id) ?? states[0];
 }
 
 export default function LifecycleVisualizer() {

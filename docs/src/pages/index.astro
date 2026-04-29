@@ -30,6 +30,7 @@ const link = (p: string) => `${baseUrl}${p}`;
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   </head>
   <body class="ork-landing">
+    <a href="#main-content" class="ork-skip-link">Skip to content</a>
     <header class="ork-nav">
       <a class="ork-nav__brand" href={link('/')}>
         <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true">
@@ -52,7 +53,7 @@ const link = (p: string) => `${baseUrl}${p}`;
       </nav>
     </header>
 
-    <main>
+    <main id="main-content">
       <section class="ork-hero">
         <div class="ork-hero__copy">
           <span class="ork-hero__pill">v1.0 · MIT · self-hosted</span>
@@ -94,7 +95,14 @@ const link = (p: string) => `${baseUrl}${p}`;
         <ToonPlayground client:visible />
       </section>
 
-      <WhyCards />
+      <section class="ork-section">
+        <header class="ork-section__head">
+          <span class="ork-eyebrow">Why Orkestra</span>
+          <h2>Designed for autonomous agents</h2>
+          <p>Purpose-built primitives for agentic workflows.</p>
+        </header>
+        <WhyCards />
+      </section>
 
       <section class="ork-section">
         <header class="ork-section__head">
@@ -120,7 +128,14 @@ const link = (p: string) => `${baseUrl}${p}`;
         <ToolExplorer client:visible />
       </section>
 
-      <InstallTabs />
+      <section class="ork-section">
+        <header class="ork-section__head">
+          <span class="ork-eyebrow">Get started</span>
+          <h2>Install in minutes</h2>
+          <p>Auto-detects Claude Code, Cursor, Copilot, Windsurf, and Zed.</p>
+        </header>
+        <InstallTabs />
+      </section>
 
       <section class="ork-section ork-cta">
         <h2>Stop paying per ticket.</h2>

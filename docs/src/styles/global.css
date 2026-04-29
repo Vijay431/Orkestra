@@ -3,6 +3,7 @@
 
 :root,
 :root[data-theme='dark'] {
+  /* Mermaid themeVariables in astro.config.mjs must be kept in sync with this palette */
   /* Palette */
   --ork-bg: #0B0F14;
   --ork-surface: #11161D;
@@ -67,6 +68,24 @@
 /* Force dark always — no light theme */
 :root[data-theme='light'] {
   color-scheme: dark;
+}
+
+.ork-skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.5rem 1rem;
+  background: var(--ork-surface);
+  color: var(--ork-text);
+  border: 2px solid var(--ork-teal);
+  border-radius: var(--ork-radius-sm);
+  font-size: var(--sl-text-sm, 0.875rem);
+  text-decoration: none;
+  transition: top var(--ork-dur-fast) var(--ork-ease-standard);
+}
+.ork-skip-link:focus {
+  top: 1rem;
 }
 
 :focus-visible {
