@@ -1,7 +1,7 @@
 # Orkestra
 
 [![CI](https://github.com/Vijay431/Orkestra/actions/workflows/ci.yml/badge.svg)](https://github.com/Vijay431/Orkestra/actions/workflows/ci.yml)
-[![Go Reference](https://pkg.go.dev/badge/github.com/Vijay431/orkestra.svg)](https://pkg.go.dev/github.com/Vijay431/orkestra)
+[![Go Reference](https://pkg.go.dev/badge/github.com/vijay431/orkestra.svg)](https://pkg.go.dev/github.com/vijay431/orkestra)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8.svg)](https://go.dev)
 
