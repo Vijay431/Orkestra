@@ -60,6 +60,14 @@ Before opening a PR, confirm:
 
 ---
 
+## 🌿 Branching Model
+
+- **All PRs must target the `dev` branch** — do not open PRs against `main`
+- Feature branches should be short-lived and named descriptively: `feat/ticket-reopen`, `fix/etag-comparison`, `docs/update-api-guide`
+- `main` is the stable release branch; it receives merges from `dev` only at release time
+
+---
+
 ## 📝 Commit Format
 
 Use [Conventional Commits](https://www.conventionalcommits.org/):
@@ -69,7 +77,11 @@ feat: add ticket_reopen tool
 fix: correct etag comparison on concurrent update
 docs: update status codes in SKILL.md
 chore: bump mcp-go to v0.50.0
+refactor: simplify store.Claim transaction logic
+test: add coverage for seq_blocked error path
 ```
+
+Supported prefixes: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`.
 
 ---
 
