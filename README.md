@@ -42,24 +42,48 @@ Solves the three LinearMCP pain points:
 
 ## 🚀 Quick Start
 
+### Step 1 — Install Orkestra and the agent skill
+
+**Option A (recommended): one-line remote install — no clone required**
+
 ```bash
-# 1. Clone and onboard (auto-detects Claude Code, Cursor, Copilot, Windsurf, Zed)
-git clone https://github.com/Vijay431/orkestra
-PROJECT_ID=myapp ./install.sh
-
-# 2. Verify
-curl http://localhost:8080/health
-# → {"status":"ok","project":"myapp","db_ok":true,...}
-
-# 3. Claude Code picks up the MCP server automatically after install
+curl -fsSL https://raw.githubusercontent.com/Vijay431/Orkestra/main/install.sh | PROJECT_ID=myapp bash
 ```
 
-Or start manually:
+**Option B: clone and install locally**
+
+```bash
+git clone https://github.com/Vijay431/Orkestra
+cd Orkestra
+PROJECT_ID=myapp ./install.sh
+```
+
+Either path does the same thing: clones (or updates) the repo, builds the Docker image, starts the server on `:8080`, registers the MCP server with every detected AI tool (Claude Code, Cursor, Copilot, Windsurf, Zed, Continue.dev), and installs the operator skill to `~/.agents/skills/orkestra/`. The installer is idempotent — re-running it updates config in place.
+
+### Step 2 — Run the server
+
+`install.sh` already started a Docker container. If you need to start it yourself:
+
+**Docker:**
 
 ```bash
 PROJECT_ID=myapp docker compose up -d
-claude mcp add orkestra-myapp --transport http http://localhost:8080/sse
 ```
+
+**Manual / no Docker** (Go 1.22+ required, useful for local dev):
+
+```bash
+PROJECT_ID=myapp go run ./cmd/server
+```
+
+### Step 3 — Verify
+
+```bash
+curl http://localhost:8080/health
+# → {"status":"ok","project":"myapp","db_ok":true,...}
+```
+
+Then, in your AI tool, ask: *"Use ticket_backlog to show me my work queue."* You should see `TOON/1 [...]` come back.
 
 [↑ Back to top](#orkestra)
 

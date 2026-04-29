@@ -2,8 +2,15 @@
 set -euo pipefail
 
 # Orkestra install script — onboards Orkestra MCP server into AI tool configs.
-# Usage: PROJECT_ID=myapp ./install.sh
-# Or run interactively (prompts for inputs).
+#
+# Usage (remote — no clone required):
+#   curl -fsSL https://raw.githubusercontent.com/Vijay431/Orkestra/main/install.sh | PROJECT_ID=myapp bash
+#
+# Usage (local clone):
+#   git clone https://github.com/Vijay431/Orkestra && cd Orkestra
+#   PROJECT_ID=myapp ./install.sh
+#
+# Or run interactively (prompts for inputs when env vars are unset).
 
 # ---------- helpers ----------
 
@@ -20,6 +27,36 @@ require_cmd() {
 
 require_cmd docker
 docker compose version >/dev/null 2>&1 || die "docker compose plugin is required"
+
+# ---------- bootstrap (remote install support) ----------
+# When run via `curl … | bash`, BASH_SOURCE[0] is empty or "bash" / "/dev/stdin",
+# so there is no local repo to draw Dockerfile/skill/ from.
+# Detect this and clone (or update) the repo to ORKESTRA_HOME first.
+
+ORKESTRA_REPO="https://github.com/Vijay431/Orkestra"
+ORKESTRA_HOME="${ORKESTRA_HOME:-$HOME/.orkestra}"
+
+# Resolve the directory that contains this script (empty when piped).
+_raw_source="${BASH_SOURCE[0]:-}"
+if [[ -n "$_raw_source" && "$_raw_source" != "bash" && "$_raw_source" != "/dev/stdin" ]]; then
+  SCRIPT_DIR="$(cd "$(dirname "$_raw_source")" && pwd)"
+else
+  SCRIPT_DIR=""
+fi
+
+# If SCRIPT_DIR is empty or the resolved dir has no Dockerfile, we need to bootstrap.
+if [[ -z "$SCRIPT_DIR" || ! -f "$SCRIPT_DIR/Dockerfile" ]]; then
+  require_cmd git
+  if [[ -d "$ORKESTRA_HOME/.git" ]]; then
+    info "Updating existing Orkestra clone at $ORKESTRA_HOME ..."
+    git -C "$ORKESTRA_HOME" pull --ff-only --quiet
+  else
+    info "Cloning Orkestra into $ORKESTRA_HOME ..."
+    git clone --depth 1 --quiet "$ORKESTRA_REPO" "$ORKESTRA_HOME"
+  fi
+  SCRIPT_DIR="$ORKESTRA_HOME"
+  info "Using repo at $SCRIPT_DIR"
+fi
 
 # ---------- inputs ----------
 
@@ -49,7 +86,6 @@ fi
 
 COMPOSE_FILE="$TARGET_DIR/docker-compose.yml"
 if [[ ! -f "$COMPOSE_FILE" ]]; then
-  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   if [[ -f "$SCRIPT_DIR/docker-compose.yml" ]]; then
     cp "$SCRIPT_DIR/docker-compose.yml" "$COMPOSE_FILE"
     info "Copied docker-compose.yml to $TARGET_DIR"
@@ -70,7 +106,6 @@ info "Written $ENV_FILE"
 
 COMPOSE_FLAGS="-f $COMPOSE_FILE --env-file $ENV_FILE"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ -f "$SCRIPT_DIR/Dockerfile" ]]; then
   info "Building Docker image..."
   docker compose $COMPOSE_FLAGS build
@@ -285,7 +320,7 @@ PYEOF
 
   COPILOT_INST="$TARGET_DIR/.github/copilot-instructions.md"
   mkdir -p "$TARGET_DIR/.github"
-  if [[ -f "$SKILL_DST" ]]; then
+  if [[ -f "$SKILL_SRC" ]]; then
     # Inject skill into project-level copilot instructions (no standard global path for Copilot)
     if ! grep -q "orkestra-skill-begin" "$COPILOT_INST" 2>/dev/null; then
       [[ -f "$COPILOT_INST" ]] && cp "$COPILOT_INST" "${COPILOT_INST}.bak"
