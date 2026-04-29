@@ -84,7 +84,7 @@
   text-decoration: none;
   transition: top var(--ork-dur-fast) var(--ork-ease-standard);
 }
-.ork-skip-link:focus {
+.ork-skip-link:focus-visible {
   top: 1rem;
 }
 
