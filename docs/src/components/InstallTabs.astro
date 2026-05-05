@@ -3,10 +3,12 @@ const tabs = [
   {
     id: 'auto',
     label: 'Auto-install',
-    body: `git clone https://github.com/Vijay431/Orkestra
+    body: `curl -fsSL https://raw.githubusercontent.com/Vijay431/Orkestra/main/install.sh | bash
+
+git clone https://github.com/Vijay431/Orkestra
 cd Orkestra
-PROJECT_ID=myapp ./install.sh`,
-    note: 'Detects Claude Code · Cursor · Copilot · Windsurf · Zed · Continue.dev and wires up the MCP entry for you.',
+./install.sh`,
+    note: 'Generates a project ID when omitted, prompts for detected tools, installs the skill, and prints Kanban, health, and MCP URLs.',
   },
   {
     id: 'docker',
@@ -19,14 +21,15 @@ curl http://localhost:8080/health`,
     id: 'go',
     label: 'Go',
     body: `PROJECT_ID=dev DB_PATH=/tmp/dev.db go run ./cmd/server`,
-    note: 'Go 1.22+. Pure-Go SQLite (modernc.org/sqlite) — no CGO needed.',
+    note: 'Go 1.26+. Pure-Go SQLite (modernc.org/sqlite) — no CGO needed.',
   },
   {
-    id: 'claude',
-    label: 'Claude Code',
-    body: `claude mcp add orkestra-myapp \\
-  --transport http http://localhost:8080/sse`,
-    note: 'After the server is up, register it as an MCP endpoint.',
+    id: 'tools',
+    label: 'AI tools',
+    body: `PROJECT_ID=myapp ORKESTRA_TOOLS=codex,claude ./install.sh
+
+PROJECT_ID=myapp ORKESTRA_TOOLS=all ./install.sh`,
+    note: 'Supported names: claude · codex · cursor · copilot · windsurf · zed · continue.',
   },
 ];
 ---

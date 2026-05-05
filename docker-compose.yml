@@ -1,9 +1,11 @@
 services:
   orkestra:
-    build: .
+    build:
+      context: ${ORKESTRA_BUILD_CONTEXT:-.}
+      dockerfile: Dockerfile
     ports:
       - "${PORT:-8080}:8080"
-      - "7777:7777"  # web UI (Kanban board)
+      - "${WEB_PORT:-7777}:7777"  # web UI (Kanban board)
     volumes:
       - orkestra-data:/data
     environment:
@@ -25,7 +27,7 @@ services:
           cpus: "0.5"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      test: ["CMD", "/orkestra", "healthcheck", "http://127.0.0.1:8080/health"]
       interval: 30s
       timeout: 5s
       retries: 3

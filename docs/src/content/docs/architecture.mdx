@@ -115,7 +115,7 @@ Three layers:
 The production image is `FROM scratch`:
 
 ```
-Stage 1 (builder): golang:1.22-alpine
+Stage 1 (builder): golang:1.26-alpine
   └─ go build -ldflags="-s -w" -o orkestra ./cmd/server
 Stage 2 (final):   FROM scratch
   ├─ /orkestra (binary, ~12 MB stripped)

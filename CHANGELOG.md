@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Docs dependency advisory posture: keep Astro/Starlight upgrades as a follow-up task; treat only high/critical `npm audit` findings as release blockers.
+
 ### Fixed
 
 ## [1.0.0] - 2026-04-27

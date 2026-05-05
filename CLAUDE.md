@@ -25,7 +25,9 @@ See `skill/SKILL.md` for the LLM operator guide (tool selection, TOON format, wo
 - **Etag = updated_at**: `UpdateInput.Etag` is `updated_at` as RFC3339Nano — must be passed for optimistic locking
 - **ticket_claim**: atomic CAS; moves ticket to `ip` and enforces `exec_mode=seq` ordering (prior seq ticket must be `dn`/`cl`)
 - **Schema sync**: `internal/testutil/db.go` `Schema` const must stay in sync with `migrations/001_init.sql` (used by in-memory test DBs)
-- **MCP transport**: stdio-based; the server is started with `srv.Start(ctx)` in `main.go` which blocks
+- **MCP transport**: SSE over HTTP; the server exposes `/sse` and `/message` for MCP clients, plus public `/health` and `/skill` endpoints; `srv.Start(ctx)` in `main.go` blocks until shutdown
+- **healthcheck subcommand**: `./orkestra healthcheck <url>` — exits 0 on HTTP 200, 1 on unhealthy, 2 on bad args; used by the Docker `HEALTHCHECK` directive
+- **Module path**: `github.com/vijay431/orkestra` — use this for internal imports
 
 ## Getting Started
 

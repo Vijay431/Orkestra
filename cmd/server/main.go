@@ -5,15 +5,17 @@ package main
 import (
 	"context"
 	"database/sql"
+	_ "embed"
 	"fmt"
+	"io"
 	stdlog "log"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
 	"time"
-	_ "embed"
 
 	_ "modernc.org/sqlite"
 
@@ -26,14 +28,18 @@ import (
 var initSQL string
 
 func main() {
+	if len(os.Args) >= 2 && os.Args[1] == "healthcheck" {
+		os.Exit(runHealthcheck(os.Args[2:]))
+	}
+
 	log := newLogger(getenv("LOG_LEVEL", "info"))
 
 	cfg := orkmcp.Config{
-		ProjectID: mustEnv("PROJECT_ID", log),
-		Port:      getenv("PORT", "8080"),
-		BindAddr:  getenv("BIND_ADDR", "0.0.0.0"),
-		MCPToken:  os.Getenv("MCP_TOKEN"),
-		BackupDir: getenv("BACKUP_DIR", "backups"),
+		ProjectID:  mustEnv("PROJECT_ID", log),
+		Port:       getenv("PORT", "8080"),
+		BindAddr:   getenv("BIND_ADDR", "0.0.0.0"),
+		MCPToken:   os.Getenv("MCP_TOKEN"),
+		BackupDir:  getenv("BACKUP_DIR", "backups"),
 		BackupKeep: getenvInt("BACKUP_KEEP", 24),
 	}
 	cfg.BackupInterval = getenvDuration("BACKUP_INTERVAL", time.Hour)
@@ -136,4 +142,34 @@ func newLogger(levelStr string) *slog.Logger {
 		level = slog.LevelInfo
 	}
 	return slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: level}))
+}
+
+func runHealthcheck(args []string) int {
+	if len(args) != 1 {
+		fmt.Fprintln(os.Stderr, "usage: orkestra healthcheck <url>")
+		return 2
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, args[0], nil)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "healthcheck: %v\n", err)
+		return 2
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "healthcheck: %v\n", err)
+		return 1
+	}
+	defer resp.Body.Close()
+	io.Copy(io.Discard, resp.Body) // best-effort drain
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Fprintf(os.Stderr, "healthcheck: unhealthy (status %d)\n", resp.StatusCode)
+		return 1
+	}
+	return 0
 }

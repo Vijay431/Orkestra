@@ -1,4 +1,8 @@
-.worktrees/
+.git
+.github
+.worktrees
+.codex
+.agents
 
 # Local env / secrets
 .env
@@ -10,18 +14,14 @@
 *.db-wal
 
 # Local backup snapshots (BACKUP_DIR default)
-backups/
+backups
 
-# Built binaries
-/orkestra
-/server
+# Docs build output / deps
+docs/node_modules
+docs/dist
+docs/.astro
+docs/.cache
 
-# Docs deps / build output
-docs/node_modules/
-docs/dist/
-docs/.astro/
-docs/.cache/
-
-# Editor / OS
+# Editor / OS junk
 *.swp
 .DS_Store

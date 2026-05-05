@@ -119,10 +119,10 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	lastBackup, lastBackupTime := s.svc.LastBackup(s.cfg.BackupDir)
 
 	resp := map[string]any{
-		"status":          "ok",
-		"project":         s.cfg.ProjectID,
-		"db_ok":           dbOK,
-		"last_backup":     lastBackup,
+		"status":           "ok",
+		"project":          s.cfg.ProjectID,
+		"db_ok":            dbOK,
+		"last_backup":      lastBackup,
 		"last_backup_time": "",
 	}
 	if !lastBackupTime.IsZero() {
@@ -163,6 +163,7 @@ func (s *Server) authMiddleware(next http.Handler) http.Handler {
 func loadSkillMD() string {
 	candidates := []string{
 		"ORKESTRA_SKILL.md",
+		filepath.Join("skill", "SKILL.md"),
 		filepath.Join(filepath.Dir(os.Args[0]), "ORKESTRA_SKILL.md"),
 	}
 	for _, p := range candidates {
