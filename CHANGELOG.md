@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Docs dependency advisory posture: keep Astro/Starlight upgrades as a follow-up task; treat only high/critical `npm audit` findings as release blockers.
+- Docs dependency advisory posture: keep Astro/Starlight upgrades as a follow-up task; treat only high/critical `npm audit` findings as release blockers. Low/medium findings must be logged with target SLA dates (30 days for medium, 90 days for low); each must be triaged against impact, exploitability, and user-facing surface before being marked non-blocking.
 
 ### Fixed
 

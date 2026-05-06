@@ -26,7 +26,7 @@ random_slug() {
   if command -v openssl >/dev/null 2>&1; then
     suffix="$(openssl rand -hex 4 | tr -dc 'a-f0-9' | cut -c1-6)"
   else
-    suffix="$(printf '%s' "$$-$(date +%s%N)" | cksum | awk '{print $1}' | cut -c1-6)"
+    suffix="$(head -c 4 /dev/urandom | od -An -tx1 | tr -d ' \n' | cut -c1-6)"
   fi
   printf 'orkestra-%s' "$suffix"
 }
@@ -200,8 +200,8 @@ select_tools() {
   done
 
   if [[ -n "${ORKESTRA_TOOLS:-}" ]]; then
-    local requested="${ORKESTRA_TOOLS,,}"
-    requested="${requested// /}"
+    local requested
+    requested="$(printf '%s' "$ORKESTRA_TOOLS" | tr '[:upper:]' '[:lower:]' | tr -d ' ')"
     if [[ "$requested" == "all" ]]; then
       selected_tools=("${supported[@]}")
     else
@@ -221,8 +221,7 @@ select_tools() {
     echo ""
     read -rp "Select tools to configure [all, comma-separated numbers/names, none] (all): " tool_input
     tool_input="${tool_input:-all}"
-    tool_input="${tool_input,,}"
-    tool_input="${tool_input// /}"
+    tool_input="$(printf '%s' "$tool_input" | tr '[:upper:]' '[:lower:]' | tr -d ' ')"
     if [[ "$tool_input" == "none" ]]; then
       selected_tools=()
     elif [[ "$tool_input" == "all" ]]; then
@@ -432,6 +431,7 @@ ENV_FILE="$TARGET_DIR/.env"
   printf 'BIND_ADDR=0.0.0.0\n'
   printf 'ORKESTRA_BUILD_CONTEXT=%s\n' "$SCRIPT_DIR"
 } > "$ENV_FILE"
+chmod 600 "$ENV_FILE"
 info "Wrote $ENV_FILE"
 
 COMPOSE_FLAGS=(-f "$COMPOSE_FILE" --env-file "$ENV_FILE")

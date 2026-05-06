@@ -69,6 +69,11 @@ make test-all           # all of the above
 # Coverage report
 make cover              # writes coverage.html
 
+# Quality checks (no local lint target — these run in CI)
+go vet ./...
+govulncheck ./...
+staticcheck ./...
+
 # Docker
 PROJECT_ID=myapp docker compose up -d
 ```
